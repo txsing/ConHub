@@ -123,19 +123,21 @@ public class DockerFileWatcher extends Thread{
                     
                     Synchro.syncImamge(child.toString()
                             .substring(Constants.DOCKER_PATH_IMAGE.length()),
-                            event.kind().name());
+                            event.kind().name());      
+                    
+                }else if(type.equals("repo") 
+                        && child.toString().endsWith("repositories.json")) {
+                    logger.log(Level.INFO, "REPO SYNC TRIGGERED");
                     
                     Synchro.syncRepo();
-                }
-                
-                if(type.equals("container") 
-                        && !event.kind().name().equals("ENTRY_MODIFY")){
+                    
+                }else if(type.equals("container") 
+                        && !event.kind().name().equals("ENTRY_MODIFY")) {
                     logger.log(Level.INFO, "CONTAINER SYNC TRIGGERED");
                     Synchro.syncContainer(child.toString()
                             .substring(Constants.DOCKER_PATH_CONTAINER.length()),
                             event.kind().name());
                 }
-                
                 // if directory is created, and watching recursively, then
                 // register it and its sub-directories
                 if (recursive && (kind == ENTRY_CREATE)) {

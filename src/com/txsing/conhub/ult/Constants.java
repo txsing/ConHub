@@ -14,6 +14,8 @@ import java.util.Set;
  * @author txsing
  */
 public class Constants {
+    //ConHub default parameters
+    public static final String CONHUB_REGISTRY = "localhost";
     //DB parameters
     public static final String DB_POSTGRES_USER = "postgres";
     public static final String DB_POSTGRES_PASSWORD = "postgres";

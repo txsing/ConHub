@@ -17,7 +17,7 @@ public class Container {
     String imageID;
     String startCommand = "";
     String createDate;
-    String status;
+    //String status;    
     String ports;
     String name;
 
@@ -36,8 +36,8 @@ public class Container {
         this.createDate = containerJSONObject.get("Created").toString()
                 .substring(0,19);
 
-        this.status = ((JSONObject) containerJSONObject.get("State"))
-                .get("Status").toString();
+//        this.status = ((JSONObject) containerJSONObject.get("State"))
+//                .get("Status").toString();
 
         //ports could be null
         JSONObject tmpPorts = (JSONObject) containerJSONObject.get("NetworkSettings");
@@ -65,9 +65,9 @@ public class Container {
         return createDate;
     }
 
-    public String getStatus() {
-        return status;
-    }
+//    public String getStatus() {
+//        return status;
+//    }
 
     public String getName() {
         return name;
