@@ -33,15 +33,15 @@ public class main {
 
     public static void startFileWatchService() {
         try {
-            DockerFileWatcher imageWatcher
-                    = new DockerFileWatcher(Constants.DOCKER_PATH_IMAGE,
-                            "image", false);
-            imageWatcher.start();
-
-            DockerFileWatcher containerWatcher
-                    = new DockerFileWatcher(Constants.DOCKER_PATH_CONTAINER,
-                            "container", false);
-            containerWatcher.start();
+//            DockerFileWatcher imageWatcher
+//                    = new DockerFileWatcher(Constants.DOCKER_PATH_IMAGE,
+//                            "image", false);
+//            imageWatcher.start();
+//
+//            DockerFileWatcher containerWatcher
+//                    = new DockerFileWatcher(Constants.DOCKER_PATH_CONTAINER,
+//                            "container", false);
+//            containerWatcher.start();
             
             DockerFileWatcher repoWatcher
                     = new DockerFileWatcher(Constants.DOCKER_PATH_REPOSITORY
