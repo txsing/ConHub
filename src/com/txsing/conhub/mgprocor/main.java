@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.txsing.conhub.MGProcor;
+package com.txsing.conhub.mgprocor;
 
 import java.util.*;
 import com.txsing.conhub.ult.*;

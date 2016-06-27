@@ -1,4 +1,4 @@
-package com.txsing.conhub.MGProcor;
+package com.txsing.conhub.mgprocor;
 
 import com.txsing.conhub.ult.Constants;
 import java.nio.file.*;
