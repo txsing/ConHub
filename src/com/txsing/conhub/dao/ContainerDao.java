@@ -7,10 +7,12 @@ package com.txsing.conhub.dao;
 
 import com.txsing.conhub.mgprocor.CmdExecutor;
 import com.txsing.conhub.object.Container;
+import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -76,10 +78,18 @@ public class ContainerDao {
     }
 
     public static List<String> getContainerLstFromDocker() {
-        List<String> conDKLst;
+        List<String> conDKLst = new ArrayList<>();
         String[] cmdParaArray = {"docker", "ps", "-a", "-q"};
-
-        conDKLst = CmdExecutor.executeInteractiveDockerCMD(cmdParaArray);
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            CmdExecutor.executeNonInteractiveDockerCMD(cmdParaArray, baos);
+            String conidLst = baos.toString();
+            if (!conidLst.equals("")) {
+                conDKLst = Arrays.asList(conidLst.split("\n"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return conDKLst;
     }
 }

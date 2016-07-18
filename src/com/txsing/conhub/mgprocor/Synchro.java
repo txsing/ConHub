@@ -23,14 +23,13 @@ import org.json.simple.JSONObject;
  */
 public class Synchro {
 
-    private List<List<String>> repoLst;
+    private List<List<String>> repoDBLst;
+    
     private static Synchro theOne;
 
     public void syncAll() {
         syncImage();
         syncContainer();
-        
-
     }
 
     /**
@@ -43,7 +42,7 @@ public class Synchro {
         Logger logger = Logger.getLogger("com.txsing.conhub.mgprocor");
         try (Connection conn = DBConnector.connectPostgres()) {
             if (eventKind.equals("ENTRY_CREATE")) {
-                ImageDao.insertNewImageIntoDB(imageID, conn);
+                ImageDao.syncNewImageIntoDB(imageID, conn);
                 logger.log(Level.INFO, "INSERT IMAGE INTO DB: {0}", imageID.substring(0, 12));
             }
             if (eventKind.equals("ENTRY_DELETE")) {
@@ -68,7 +67,7 @@ public class Synchro {
 
         for (String imageId : imageDKLst) {
             if (!imageDBLst.contains(imageId)) {
-                ImageDao.insertNewImageIntoDB(imageId, conn);
+                ImageDao.syncNewImageIntoDB(imageId, conn);
                 insertLst.add(imageId);
             }
         }
@@ -208,6 +207,9 @@ public class Synchro {
 
     }
     
+    
+    
+    
     public static Synchro getInstance(){
         if(theOne == null){
             theOne = new Synchro();
@@ -215,7 +217,33 @@ public class Synchro {
         return theOne;
     }
     
+    //constructor
     private Synchro(){
-        
+        Connection conn = DBConnector.connectPostgres();
+        this.repoDBLst = RepoTagDAO
+                .getRepoListFromDB(Constants.CONHUB_DEFAULT_REGISTRY, conn);
+    }
+    
+    public void repoDBLstAdd(String repo, String repoID){
+        this.repoDBLst.get(0).add(repo);
+        this.repoDBLst.get(1).add(repoID);
+    }
+    
+    public void repoDBLstDelete(String repo, String repoID){
+        this.repoDBLst.get(0).remove(repo);
+        this.repoDBLst.get(1).remove(repoID);
+    }
+    
+    public List<List<String>> getRepoDBLst(){
+        return this.repoDBLst;
+    }
+    
+    //
+    private boolean imgConIDContains(List<String> ids, String longOrShortId){
+        for(String id : ids){
+            if(longOrShortId.startsWith(id) || id.startsWith(longOrShortId))
+                return true;
+        }
+        return false;
     }
 }

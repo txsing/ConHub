@@ -27,6 +27,7 @@ public class Image {
         this.imageID = imageid.substring(imageid.indexOf("sha256:")+7);
         
         String repotags = imageJSONObject.get("RepoTags").toString();
+        repotags = repotags.substring(repotags.indexOf('"')+1, repotags.lastIndexOf('"'));
         String[] repotagsArray = repotags.split(":");
         this.repo = repotagsArray[0];
         this.tag = repotagsArray[1];

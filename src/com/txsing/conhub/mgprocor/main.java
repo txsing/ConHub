@@ -5,6 +5,8 @@
  */
 package com.txsing.conhub.mgprocor;
 
+import com.txsing.conhub.dao.ImageDao;
+import com.txsing.conhub.object.Image;
 import java.util.*;
 import com.txsing.conhub.ult.*;
 import java.util.logging.FileHandler;
@@ -27,7 +29,8 @@ public class main {
 //            }
 //        }
 //        scanner.close();
-        Synchro.syncRepo();
+        Synchro.getInstance().syncAll();
+        //ImageDao.getImageLstFromDocker();
     }
     
     public static List<String> executeCMD(String cmd) {
