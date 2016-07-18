@@ -10,17 +10,12 @@ import com.txsing.conhub.dao.ImageDao;
 import com.txsing.conhub.dao.JsonDao;
 import com.txsing.conhub.dao.RepoTagDAO;
 import com.txsing.conhub.ult.*;
-import com.txsing.conhub.object.*;
 import java.sql.*;
-import java.io.ByteArrayOutputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import org.json.simple.JSONObject; 
 
 /**
  *
@@ -28,10 +23,13 @@ import org.json.simple.parser.JSONParser;
  */
 public class Synchro {
 
-    private List<String> imageDBLst;
-    private List<String> conDBLst;
+    private List<List<String>> repoLst;
+    private static Synchro theOne;
 
     public void syncAll() {
+        syncImage();
+        syncContainer();
+        
 
     }
 
@@ -63,7 +61,7 @@ public class Synchro {
      */
     public void syncImage() {
         Connection conn = DBConnector.connectPostgres();
-        imageDBLst = ImageDao.getImageLstFromDB(conn);
+        List<String> imageDBLst = ImageDao.getImageLstFromDB(conn);
         List<String> imageDKLst = ImageDao.getImageLstFromDocker();
 
         List<String> insertLst = new ArrayList<>();
@@ -113,7 +111,7 @@ public class Synchro {
      */
     public void syncContainer() {
         Connection conn = DBConnector.connectPostgres();
-        conDBLst =  ContainerDao.getContainerLstFromDB(conn);
+        List<String> conDBLst =  ContainerDao.getContainerLstFromDB(conn);
         
         List<String> conDKLst = ContainerDao.getContainerLstFromDocker();
 
@@ -137,7 +135,9 @@ public class Synchro {
 
     
     
-    
+    /***
+     * sync the whole Repo (default registry dockerhub)
+     */
     public static void syncRepo() {
         syncRepo(Constants.CONHUB_DEFAULT_REGISTRY);
     }
@@ -206,5 +206,16 @@ public class Synchro {
             e.printStackTrace();
         }
 
+    }
+    
+    public static Synchro getInstance(){
+        if(theOne == null){
+            theOne = new Synchro();
+        }
+        return theOne;
+    }
+    
+    private Synchro(){
+        
     }
 }

@@ -7,6 +7,7 @@ package com.txsing.conhub.dao;
 
 import com.txsing.conhub.mgprocor.CmdExecutor;
 import com.txsing.conhub.object.Image;
+import com.txsing.conhub.ult.Constants;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -33,7 +34,14 @@ public class ImageDao {
         }
     }
 
-    public static boolean insertNewImageIntoDB(String imageID, Connection conn) {
+    public static boolean insertNewImageIntoDB(String imageID, 
+            Connection conn){
+        return insertNewImageIntoDB(imageID, Constants.CONHUB_DEFAULT_REGISTRY,
+                conn);
+    }
+    
+    public static boolean insertNewImageIntoDB(String imageID, 
+            String regName ,Connection conn) {
         try {
             Image newImage = new Image(JsonDao.getImageAndConJSONInfo(imageID));
             String sql = "INSERT INTO IMAGES VALUES (" + "'"
@@ -46,6 +54,11 @@ public class ImageDao {
             Statement stmt = conn.createStatement();
             stmt.executeUpdate(sql);
             stmt.close();
+            
+            String repoID = 
+                    RepoTagDAO.insertNewRepoIntoDB(conn, newImage.getRepo(), regName);
+            RepoTagDAO.insertNewTagIntoDB(conn, newImage.getTag()
+                    , imageID, repoID);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
