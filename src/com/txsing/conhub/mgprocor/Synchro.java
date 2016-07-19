@@ -66,19 +66,24 @@ public class Synchro {
         List<String> insertLst = new ArrayList<>();
 
         for (String imageId : imageDKLst) {
-            if (!imageDBLst.contains(imageId)) {
+            if (!imgConIDContains(imageDBLst, imageId)) {
                 ImageDao.syncNewImageIntoDB(imageId, conn);
                 insertLst.add(imageId);
             }
         }
 
         for (String imgId : imageDBLst) {
-            if (!imageDKLst.contains(imgId)) {
+            if (!imgConIDContains(imageDKLst, imgId)) {
                 ImageDao.deleteImageFromDB(imgId, conn);
                 imageDBLst.remove(imgId);
             }
         }
-        imageDBLst.addAll(insertLst);
+        //imageDBLst.addAll(insertLst);
+        try {
+            conn.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(Synchro.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     
@@ -117,19 +122,24 @@ public class Synchro {
         List<String> insertLst = new ArrayList<>();
 
         for (String conId : conDKLst) {
-            if (!conDBLst.contains(conId)) {
+            if (!imgConIDContains(conDBLst, conId)) {
                 ContainerDao.insertNewContainerIntoDB(conId, conn);
                 insertLst.add(conId);
             }
         }
 
         for (String conId : conDBLst) {
-            if (!conDKLst.contains(conId)) {
+            if (!imgConIDContains(conDKLst, conId)) {
                 ContainerDao.deleteContainerFromDB(conId, conn);
                 conDBLst.remove(conId);
             }
         }
-        conDBLst.addAll(insertLst);
+        //conDBLst.addAll(insertLst);
+        try {
+            conn.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(Synchro.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     
@@ -238,7 +248,15 @@ public class Synchro {
         return this.repoDBLst;
     }
     
-    //
+    
+    /***
+     * the full length of imageid or conid is 64(long id). However "docker ps/images" will
+     * only return the starting part of the id (short id).
+     * 
+     * @param ids
+     * @param longOrShortId
+     * @return 
+     */
     private boolean imgConIDContains(List<String> ids, String longOrShortId){
         for(String id : ids){
             if(longOrShortId.startsWith(id) || id.startsWith(longOrShortId))

@@ -125,11 +125,11 @@ public class DockerFileWatcher extends Thread{
                             .substring(Constants.DOCKER_PATH_IMAGE.length()),
                             event.kind().name());      
                     
-                }else if(type.equals("repo") 
-                        && child.toString().endsWith("repositories.json")) {
-                    logger.log(Level.INFO, "REPO SYNC TRIGGERED");
-                    
-                    Synchro.syncRepo();
+//                }else if(type.equals("repo") 
+//                        && child.toString().endsWith("repositories.json")) {
+//                    logger.log(Level.INFO, "REPO SYNC TRIGGERED");
+//                    
+//                    Synchro.syncRepo();
                     
                 }else if(type.equals("container") 
                         && !event.kind().name().equals("ENTRY_MODIFY")) {

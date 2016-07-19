@@ -5,8 +5,6 @@
  */
 package com.txsing.conhub.mgprocor;
 
-import com.txsing.conhub.dao.ImageDao;
-import com.txsing.conhub.object.Image;
 import java.util.*;
 import com.txsing.conhub.ult.*;
 import java.util.logging.FileHandler;
@@ -20,24 +18,33 @@ import java.util.logging.Logger;
 public class main {
 
     public static void main(String[] args) {
-//        Scanner scanner = new Scanner(System.in);
-//        while (scanner.hasNext()) {
-//            String cmd = scanner.nextLine();
-//            List<String> output = executeCMD(cmd);
-//            for (String str : output) {
-//                System.out.println(str);
-//            }
-//        }
-//        scanner.close();
-        Synchro.getInstance().syncAll();
-        //ImageDao.getImageLstFromDocker();
+        initSystem();
+        try (Scanner scanner = new Scanner(System.in)) {
+            while (scanner.hasNext()) {
+                String cmd = scanner.nextLine();
+                List<String> output = executeCMD(cmd);
+                if (output != null) {
+                    output.stream().forEach((str) -> {
+                        System.out.println(str);
+                    });
+                }
+            }
+            //Synchro.getInstance().syncAll();
+            //ImageDao.getImageLstFromDocker();
+        }
     }
-    
+
     public static List<String> executeCMD(String cmd) {
         return CmdExecutor.execute(cmd);
     }
-    
-    public void setLogger() {
+
+    public static void initSystem() {
+        Synchro.getInstance().syncAll();
+        startFileWatchService();
+        setLogger();
+    }
+
+    public static void setLogger() {
         try {
             Logger logger = Logger.getLogger("com.txsing.conhub.mgprocor");
             FileHandler fileHandler = new FileHandler("mgprocor.log");
@@ -45,7 +52,7 @@ public class main {
 
             logger.addHandler(fileHandler);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 
@@ -61,10 +68,9 @@ public class main {
                             "container", false);
             containerWatcher.start();
 
-            DockerFileWatcher repoWatcher
-                    = new DockerFileWatcher(Constants.DOCKER_PATH_REPOSITORY, "repo", false);
-            repoWatcher.start();
-
+//            DockerFileWatcher repoWatcher
+//                    = new DockerFileWatcher(Constants.DOCKER_PATH_REPOSITORY, "repo", false);
+//            repoWatcher.start();
         } catch (Exception e) {
             System.err.println("Failed to start monitor service!");
             e.printStackTrace();

@@ -55,7 +55,15 @@ public class CmdExecutor {
 
             ResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();
-
+            
+            //print headers
+            String headline = "";
+            for (int i = 1; i <= columnCount; i++){
+                headline = headline + rsmd.getColumnName(i)+"\t";
+            }
+            resultStringList.add(headline.toUpperCase());
+            
+            //print values
             while (rs.next()) {
                 String line = "";
                 for (int i = 1; i <= columnCount; i++) {
@@ -63,10 +71,12 @@ public class CmdExecutor {
                 }
                 resultStringList.add(line);
             }
+            
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            System.err.println(e.getMessage());
+            return resultStringList;
         }
+        resultStringList.add("------");
         return resultStringList;
     }
 
