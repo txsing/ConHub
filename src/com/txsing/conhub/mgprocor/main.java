@@ -68,9 +68,9 @@ public class main {
                             "container", false);
             containerWatcher.start();
 
-//            DockerFileWatcher repoWatcher
-//                    = new DockerFileWatcher(Constants.DOCKER_PATH_REPOSITORY, "repo", false);
-//            repoWatcher.start();
+            DockerFileWatcher repoWatcher
+                    = new DockerFileWatcher(Constants.DOCKER_PATH_REPOSITORY, "repo", false);
+            repoWatcher.start();
         } catch (Exception e) {
             System.err.println("Failed to start monitor service!");
             e.printStackTrace();

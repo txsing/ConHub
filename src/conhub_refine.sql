@@ -1,7 +1,7 @@
---> refined
+\c postgres
 drop database consql;
 create database consql;
-
+\c consql
 create table images(
 	imageid varchar(64) primary key,
 	parentimageid varchar(64),

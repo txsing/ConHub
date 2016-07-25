@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.simple.JSONObject; 
+import org.json.simple.JSONObject;
 
 /**
  *
@@ -24,8 +24,16 @@ import org.json.simple.JSONObject;
 public class Synchro {
 
     private List<List<String>> repoDBLst;
-    
+
     private static Synchro theOne;
+    protected boolean SIGNAL_SYNC_REPO = true;
+
+    //constructor
+    private Synchro() {
+        Connection conn = DBConnector.connectPostgres();
+        this.repoDBLst = RepoTagDAO
+                .getRepoListFromDB(Constants.CONHUB_DEFAULT_REGISTRY, conn);
+    }
 
     public void syncAll() {
         syncImage();
@@ -66,7 +74,8 @@ public class Synchro {
         List<String> insertLst = new ArrayList<>();
 
         for (String imageId : imageDKLst) {
-            if (!imgConIDContains(imageDBLst, imageId)) {
+            if (!imgConIDContains(imageDBLst, imageId) 
+                    && !(insertLst.contains(imageId))) {
                 ImageDao.syncNewImageIntoDB(imageId, conn);
                 insertLst.add(imageId);
             }
@@ -86,9 +95,9 @@ public class Synchro {
         }
     }
 
-    
     /**
      * Single Container Sync (Given Container ID)
+     *
      * @param containerID
      * @param eventKind
      */
@@ -115,8 +124,8 @@ public class Synchro {
      */
     public void syncContainer() {
         Connection conn = DBConnector.connectPostgres();
-        List<String> conDBLst =  ContainerDao.getContainerLstFromDB(conn);
-        
+        List<String> conDBLst = ContainerDao.getContainerLstFromDB(conn);
+
         List<String> conDKLst = ContainerDao.getContainerLstFromDocker();
 
         List<String> insertLst = new ArrayList<>();
@@ -142,32 +151,32 @@ public class Synchro {
         }
     }
 
-    
-    
-    /***
+    /**
+     * *
      * sync the whole Repo (default registry dockerhub)
      */
-    public static void syncRepo() {
+    public void syncRepo() {
         syncRepo(Constants.CONHUB_DEFAULT_REGISTRY);
     }
 
-    private static void syncRepo(String regName) {
+    private void syncRepo(String regName) {
         try {
             Logger logger = Logger.getLogger("com.txsing.conhub.mgprocor");
             Connection conn = DBConnector.connectPostgres();
 
             JSONObject repoJSONObject = JsonDao.getRepoJSONInfo();
 
-            List<List<String>> repoDBLst = RepoTagDAO.getRepoListFromDB(regName, conn);
-
+            //List<List<String>> repoDBLst = RepoTagDAO.getRepoListFromDB(regName, conn);
             for (Object repokey : repoJSONObject.keySet()) {
                 String repoName = (String) repokey;
-                System.err.println(regName + ":" + repoName);
+                
+                String repoFullString = regName + ":" + repoName;
+                System.err.println(repoFullString);
                 //e,g,. Ubuntu:14.03, here Ubuntu is the repo name while 14.03 is tag.
-                //First check whether Ubuntu Repo is already stored in DB or not,
-                //if ture, then check whether tag-"14.03" exists or not. 
-                int index = repoDBLst.get(0).indexOf(regName + ":" + repoName);
-                if (index != -1) {
+                //First check whether repo "Ubuntu" is already stored in DB or not,
+                //if ture, then check whether tag "14.03" exists or not. 
+                int index = repoDBLst.get(0).indexOf(repoFullString);
+                if (index != -1) { //repo already exists
                     String repoID = repoDBLst.get(1).get(index);
                     List<String> tagDBLst = RepoTagDAO.getImageTagListFromDB(repoID, conn);
 
@@ -189,9 +198,11 @@ public class Synchro {
                                     imageID, repoName);
                         }
                     }
-                } else {
-                    RepoTagDAO.insertNewRepoIntoDB(conn, repoName, regName);
+                } else { //new repo new tag
+                    String repoID = RepoTagDAO.insertNewRepoIntoDB(conn, repoName, regName);
+                    repoDBLstAdd(repoFullString, repoID);
                     System.err.println("Insert Repo: " + regName + ":" + repoName);
+                    
                     JSONObject tagJSONObject = (JSONObject) repoJSONObject
                             .get(repoName);
                     for (Object tagkey : tagJSONObject.keySet()) {
@@ -216,52 +227,43 @@ public class Synchro {
         }
 
     }
-    
-    
-    
-    
-    public static Synchro getInstance(){
-        if(theOne == null){
+
+    /**
+     * *
+     * the full length of imageid or conid is 64(long id). However "docker
+     * ps/images" will only return the starting part of the id (short id).
+     *
+     * @param ids
+     * @param longOrShortId
+     * @return
+     */
+    private boolean imgConIDContains(List<String> ids, String longOrShortId) {
+        for (String id : ids) {
+            if (longOrShortId.startsWith(id) || id.startsWith(longOrShortId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void repoDBLstAdd(String regColonRepo, String repoID) {
+        this.repoDBLst.get(0).add(regColonRepo);
+        this.repoDBLst.get(1).add(repoID);
+    }
+
+    public void repoDBLstDelete(String regColonRepo, String repoID) {
+        this.repoDBLst.get(0).remove(regColonRepo);
+        this.repoDBLst.get(1).remove(repoID);
+    }
+
+    public static Synchro getInstance() {
+        if (theOne == null) {
             theOne = new Synchro();
         }
         return theOne;
     }
-    
-    //constructor
-    private Synchro(){
-        Connection conn = DBConnector.connectPostgres();
-        this.repoDBLst = RepoTagDAO
-                .getRepoListFromDB(Constants.CONHUB_DEFAULT_REGISTRY, conn);
-    }
-    
-    public void repoDBLstAdd(String repo, String repoID){
-        this.repoDBLst.get(0).add(repo);
-        this.repoDBLst.get(1).add(repoID);
-    }
-    
-    public void repoDBLstDelete(String repo, String repoID){
-        this.repoDBLst.get(0).remove(repo);
-        this.repoDBLst.get(1).remove(repoID);
-    }
-    
-    public List<List<String>> getRepoDBLst(){
+
+    public List<List<String>> getRepoDBLst() {
         return this.repoDBLst;
-    }
-    
-    
-    /***
-     * the full length of imageid or conid is 64(long id). However "docker ps/images" will
-     * only return the starting part of the id (short id).
-     * 
-     * @param ids
-     * @param longOrShortId
-     * @return 
-     */
-    private boolean imgConIDContains(List<String> ids, String longOrShortId){
-        for(String id : ids){
-            if(longOrShortId.startsWith(id) || id.startsWith(longOrShortId))
-                return true;
-        }
-        return false;
     }
 }

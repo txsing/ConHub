@@ -7,13 +7,14 @@ import static java.nio.file.LinkOption.*;
 import java.nio.file.attribute.*;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.locks.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Watch Docker directories for changes to files.
  */
-public class DockerFileWatcher extends Thread{
+public class DockerFileWatcher extends Thread {
 
     private final WatchService watcher;
     private final Map<WatchKey, Path> keys;
@@ -28,7 +29,7 @@ public class DockerFileWatcher extends Thread{
     }
 
     /**
-     * 
+     *
      * Register the given directory with the WatchService
      */
     private void register(Path dir) throws IOException {
@@ -87,7 +88,7 @@ public class DockerFileWatcher extends Thread{
     void processEvents() {
         Logger logger = Logger.getLogger("com.txsing.conhub.mgprocor");
         logger.log(Level.INFO, "DIR: {0} MONITORED SUCCESSFULLY", dir);
-        
+
         for (;;) {
             // wait for key to be signalled
             WatchKey key;
@@ -118,20 +119,41 @@ public class DockerFileWatcher extends Thread{
 
                 //event detected
                 //System.out.format("%s: %s\n", event.kind().name(), child);
-                if(type.equals("image") && !child.toString().endsWith("tmp") ){
+                if (type.equals("image") && !child.toString().endsWith("tmp")) {
                     logger.log(Level.INFO, "IMAGE SYNC TRIGGERED");
-                    
+
+                    //docker pull a new image of which the image id is new, then
+                    //signal is set to false, cos the repo of that image will be
+                    //synced along with the image itself.
+                    //However, if docker pull a new image of which the image id is
+                    //already existing (the content is the same, the image is new
+                    //in terms of "name") in this case, the singal is set to true 
+                    ReadWriteLock rwl = new ReentrantReadWriteLock();
+                    Lock writeLock = rwl.writeLock();
+                    writeLock.lock();
+                    try {
+                        Synchro.getInstance().SIGNAL_SYNC_REPO = false;
+                    } finally {
+                        writeLock.unlock();
+                    }
+
                     Synchro.syncImamge(child.toString()
                             .substring(Constants.DOCKER_PATH_IMAGE.length()),
-                            event.kind().name());      
-                    
-//                }else if(type.equals("repo") 
-//                        && child.toString().endsWith("repositories.json")) {
-//                    logger.log(Level.INFO, "REPO SYNC TRIGGERED");
-//                    
-//                    Synchro.syncRepo();
-                    
-                }else if(type.equals("container") 
+                            event.kind().name());
+                } else if (type.equals("repo")
+                        && child.toString().endsWith("repositories.json")) {
+                    try {
+                        Thread.sleep(300);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
+                    logger.log(Level.INFO, "REPO SYNC TRIGGERED");
+                    if(Synchro.getInstance().SIGNAL_SYNC_REPO == true){
+                        Synchro.getInstance().syncRepo();
+                    }else{
+                        Synchro.getInstance().SIGNAL_SYNC_REPO = true;
+                    }
+                } else if (type.equals("container")
                         && !event.kind().name().equals("ENTRY_MODIFY")) {
                     logger.log(Level.INFO, "CONTAINER SYNC TRIGGERED");
                     Synchro.syncContainer(child.toString()
@@ -163,13 +185,13 @@ public class DockerFileWatcher extends Thread{
             }
         }
     }
-    
-    public String getType(){
+
+    public String getType() {
         return type;
     }
 
     @Override
-    public void run(){
+    public void run() {
         processEvents();
     }
 }

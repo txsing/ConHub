@@ -1,14 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE log SYSTEM "logger.dtd">
 <log>
-<record>
-  <date>2016-07-19T15:55:38</date>
-  <millis>1468914938043</millis>
-  <sequence>1</sequence>
-  <logger>com.txsing.conhub.mgprocor</logger>
-  <level>INFO</level>
-  <class>com.txsing.conhub.mgprocor.DockerFileWatcher</class>
-  <method>processEvents</method>
-  <thread>12</thread>
-  <message>DIR: /var/lib/docker/containers/ MONITORED SUCCESSFULLY</message>
-</record>
+</log>
