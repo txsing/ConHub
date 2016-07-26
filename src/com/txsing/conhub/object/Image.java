@@ -54,7 +54,7 @@ public class Image {
     }
 
     public String getAuthor() {
-        return author;
+        return author.replace("\\", "");
     }
 
     public String getBuilderID() {
@@ -66,7 +66,7 @@ public class Image {
     }
     
     public String getRepo(){
-        return repo;
+        return repo.replace("\\", "");
     }
     
     public String getTag(){

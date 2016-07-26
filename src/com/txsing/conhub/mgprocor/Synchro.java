@@ -154,6 +154,8 @@ public class Synchro {
     /**
      * *
      * sync the whole Repo (default registry dockerhub)
+     * only called under the case where docker pull a new image ("new" here in terms of
+     * new repo:tag name while the imageid already exists).
      */
     public void syncRepo() {
         syncRepo(Constants.CONHUB_DEFAULT_REGISTRY);
@@ -166,12 +168,11 @@ public class Synchro {
 
             JSONObject repoJSONObject = JsonDao.getRepoJSONInfo();
 
-            //List<List<String>> repoDBLst = RepoTagDAO.getRepoListFromDB(regName, conn);
             for (Object repokey : repoJSONObject.keySet()) {
                 String repoName = (String) repokey;
                 
                 String repoFullString = regName + ":" + repoName;
-                System.err.println(repoFullString);
+                
                 //e,g,. Ubuntu:14.03, here Ubuntu is the repo name while 14.03 is tag.
                 //First check whether repo "Ubuntu" is already stored in DB or not,
                 //if ture, then check whether tag "14.03" exists or not. 
@@ -195,7 +196,7 @@ public class Synchro {
                             imageID = imageID.substring(imageID.indexOf("sha") + 7);
 
                             RepoTagDAO.insertNewTagIntoDB(conn, tagAfterProcess,
-                                    imageID, repoName);
+                                    imageID, repoID);
                         }
                     }
                 } else { //new repo new tag
@@ -216,7 +217,7 @@ public class Synchro {
                         imageID = imageID.substring(imageID.indexOf("sha") + 7);
 
                         RepoTagDAO.insertNewTagIntoDB(conn, tagAfterProcess,
-                                imageID, repoName);
+                                imageID, repoID);
 
                     }
                 }

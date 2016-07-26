@@ -77,7 +77,6 @@ public class ImageDao {
             int index = repoDBLst.get(0).indexOf(repoString);
             
             if (index == -1) {  //new repo, new tag
-                //String repoName = newImage.getRepo().replaceAll("/", "//");
                 repoID = RepoTagDAO.insertNewRepoIntoDB(conn, newImage.getRepo(), regName);
                 System.err.println(newImage.getRepo());
                 synchro.repoDBLstAdd(repoString, repoID);

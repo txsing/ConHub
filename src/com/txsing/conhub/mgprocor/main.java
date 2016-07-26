@@ -29,8 +29,6 @@ public class main {
                     });
                 }
             }
-            //Synchro.getInstance().syncAll();
-            //ImageDao.getImageLstFromDocker();
         }
     }
 
