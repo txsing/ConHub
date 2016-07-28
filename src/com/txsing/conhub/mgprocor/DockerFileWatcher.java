@@ -87,7 +87,7 @@ public class DockerFileWatcher extends Thread {
      */
     void processEvents() {
         Logger logger = Logger.getLogger("com.txsing.conhub.mgprocor");
-        logger.log(Level.INFO, "DIR: {0} MONITORED SUCCESSFULLY", dir);
+        logger.log(Level.INFO, "DIR: {0} MONITORED", dir);
 
         for (;;) {
             // wait for key to be signalled

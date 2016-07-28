@@ -40,6 +40,40 @@ public class Synchro {
         syncContainer();
     }
 
+    
+    /**
+     * Sync all images in Docker Engine with Database.
+     */
+    public void syncImage() {
+        Connection conn = DBConnector.connectPostgres();
+        List<String> imageDBLst = ImageDao.getImageLstFromDB(conn);
+        List<String> imageDKLst = ImageDao.getImageLstFromDocker();
+
+        List<String> insertLst = new ArrayList<>();
+
+        for (String imageId : imageDKLst) {
+            if (!imgConIDContains(imageDBLst, imageId)
+                    && !(insertLst.contains(imageId))) {
+                ImageDao.syncNewImageIntoDB(imageId, conn);
+                insertLst.add(imageId);
+            }
+        }
+
+        for (String imgId : imageDBLst) {
+            if (!imgConIDContains(imageDKLst, imgId)) {
+                ImageDao.deleteImageFromDB(imgId, conn);
+                imageDBLst.remove(imgId);
+            }
+        }
+        //imageDBLst.addAll(insertLst);
+        try {
+            conn.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(Synchro.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    
     /**
      * Single Image Sync (Given ImageID)
      *
@@ -63,62 +97,7 @@ public class Synchro {
         }
     }
 
-    /**
-     * Sync all images in Docker Engine with Database.
-     */
-    public void syncImage() {
-        Connection conn = DBConnector.connectPostgres();
-        List<String> imageDBLst = ImageDao.getImageLstFromDB(conn);
-        List<String> imageDKLst = ImageDao.getImageLstFromDocker();
-
-        List<String> insertLst = new ArrayList<>();
-
-        for (String imageId : imageDKLst) {
-            if (!imgConIDContains(imageDBLst, imageId) 
-                    && !(insertLst.contains(imageId))) {
-                ImageDao.syncNewImageIntoDB(imageId, conn);
-                insertLst.add(imageId);
-            }
-        }
-
-        for (String imgId : imageDBLst) {
-            if (!imgConIDContains(imageDKLst, imgId)) {
-                ImageDao.deleteImageFromDB(imgId, conn);
-                imageDBLst.remove(imgId);
-            }
-        }
-        //imageDBLst.addAll(insertLst);
-        try {
-            conn.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(Synchro.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    /**
-     * Single Container Sync (Given Container ID)
-     *
-     * @param containerID
-     * @param eventKind
-     */
-    public static void syncContainer(String containerID, String eventKind) {
-        Logger logger = Logger.getLogger("com.txsing.conhub.mgprocor");
-        try (Connection conn = DBConnector.connectPostgres()) {
-            if (eventKind.equals("ENTRY_CREATE")) {
-                ContainerDao.insertNewContainerIntoDB(containerID, conn);
-                logger.log(Level.INFO, "INSERT IMAGE INTO DB: {0}", containerID.substring(0, 12));
-            }
-            if (eventKind.equals("ENTRY_DELETE")) {
-                ContainerDao.deleteContainerFromDB(containerID, conn);
-                logger.log(Level.INFO, "DELEFROM IMAGE FROM DB: {0}", containerID.substring(0, 12));
-            }
-            conn.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println("SYNC CON: docker insect " + containerID);
-    }
-
+    
     /**
      * Sync all containers in Docker Engine with Database.
      */
@@ -151,11 +130,41 @@ public class Synchro {
         }
     }
 
+    
+    /**
+     * Single Container Sync (Given Container ID)
+     *
+     * @param containerID
+     * @param eventKind
+     */
+    public static void syncContainer(String containerID, String eventKind) {
+        Logger logger = Logger.getLogger("com.txsing.conhub.mgprocor");
+        try (Connection conn = DBConnector.connectPostgres()) {
+            if (eventKind.equals("ENTRY_CREATE")) {
+                ContainerDao.insertNewContainerIntoDB(containerID, conn);
+                logger.log(Level.INFO, "INSERT IMAGE INTO DB: {0}", containerID.substring(0, 12));
+            }
+            if (eventKind.equals("ENTRY_DELETE")) {
+                ContainerDao.deleteContainerFromDB(containerID, conn);
+                logger.log(Level.INFO, "DELEFROM IMAGE FROM DB: {0}", containerID.substring(0, 12));
+            }
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        logger.log(Level.INFO, "SYNC CON: docker insect {0}", containerID);
+    }
+
+
+
     /**
      * *
-     * sync the whole Repo (default registry dockerhub)
-     * only called under the case where docker pull a new image ("new" here in terms of
-     * new repo:tag name while the imageid already exists).
+     * sync the whole Repo (default registry dockerhub) only called under the
+     * case where docker pull a new image ("new" here in terms of new repo:tag
+     * name while the imageid already exists).
+     * e,g,. when you already have image "busybox:1.0" stored, then you pull "busybox:1.25".
+     * busybox:1.0 and busybox:1.25 actually refer to the same image (same content),
+     * so when you docker pull busybox:1.25, syncRepo will be triggered.
      */
     public void syncRepo() {
         syncRepo(Constants.CONHUB_DEFAULT_REGISTRY);
@@ -170,9 +179,9 @@ public class Synchro {
 
             for (Object repokey : repoJSONObject.keySet()) {
                 String repoName = (String) repokey;
-                
+
                 String repoFullString = regName + ":" + repoName;
-                
+
                 //e,g,. Ubuntu:14.03, here Ubuntu is the repo name while 14.03 is tag.
                 //First check whether repo "Ubuntu" is already stored in DB or not,
                 //if ture, then check whether tag "14.03" exists or not. 
@@ -190,7 +199,8 @@ public class Synchro {
                                 = tag.substring(tag.indexOf(":") + 1);
 
                         if (!tagDBLst.contains(tagAfterProcess)) { //14.03 not existed
-                            System.err.println("Insert Tag: " + tagAfterProcess);
+                            logger.log(Level.INFO, "INSERT TAG > {0}:{1}", 
+                                    new Object[]{repoName, tagAfterProcess});
 
                             String imageID = tagJSONObject.get(tag).toString();
                             imageID = imageID.substring(imageID.indexOf("sha") + 7);
@@ -202,7 +212,8 @@ public class Synchro {
                 } else { //new repo new tag
                     String repoID = RepoTagDAO.insertNewRepoIntoDB(conn, repoName, regName);
                     repoDBLstAdd(repoFullString, repoID);
-                    System.err.println("Insert Repo: " + regName + ":" + repoName);
+                    logger.log(Level.INFO, "INSERT REPO > {0}:{1}", 
+                                    new Object[]{regName, repoName});
                     
                     JSONObject tagJSONObject = (JSONObject) repoJSONObject
                             .get(repoName);
@@ -211,7 +222,8 @@ public class Synchro {
                         String tagAfterProcess
                                 = tag.substring(tag.indexOf(":") + 1);
 
-                        System.err.println("Insert Tag: " + tagAfterProcess);
+                       logger.log(Level.INFO, "INSERT TAG > {0}:{1}", 
+                                    new Object[]{repoName, tagAfterProcess});
 
                         String imageID = tagJSONObject.get(tag).toString();
                         imageID = imageID.substring(imageID.indexOf("sha") + 7);
@@ -224,7 +236,7 @@ public class Synchro {
             }
             conn.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
     }

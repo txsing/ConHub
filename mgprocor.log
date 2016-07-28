@@ -2,19 +2,19 @@
 <!DOCTYPE log SYSTEM "logger.dtd">
 <log>
 <record>
-  <date>2016-07-26T17:02:45</date>
-  <millis>1469523765557</millis>
+  <date>2016-07-28T17:13:41</date>
+  <millis>1469697221097</millis>
   <sequence>2</sequence>
   <logger>com.txsing.conhub.mgprocor</logger>
   <level>INFO</level>
   <class>com.txsing.conhub.mgprocor.DockerFileWatcher</class>
   <method>processEvents</method>
   <thread>15</thread>
-  <message>DIR: /var/lib/docker/image/aufs/ MONITORED SUCCESSFULLY</message>
+  <message>DIR: /var/lib/docker/image/aufs/ MONITORED</message>
 </record>
 <record>
-  <date>2016-07-26T17:02:59</date>
-  <millis>1469523779540</millis>
+  <date>2016-07-28T17:14:58</date>
+  <millis>1469697298108</millis>
   <sequence>3</sequence>
   <logger>com.txsing.conhub.mgprocor</logger>
   <level>INFO</level>

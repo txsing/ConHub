@@ -14,6 +14,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -38,8 +40,10 @@ public class ContainerDao {
 
     public static boolean insertNewContainerIntoDB(String containerID, Connection conn) {
         try {
+            Logger logger = Logger.getLogger("com.txsing.conhub.dao");
             Container newContainer = new Container(JsonDao
                     .getImageAndConJSONInfo(containerID));
+            
             String sql = "INSERT INTO CONTAINERS VALUES(" + "'"
                     + newContainer.getContainerID() + "', " + "'"
                     + newContainer.getImageID() + "', " + "'"
@@ -48,10 +52,11 @@ public class ContainerDao {
                     + newContainer.getPorts() + "', " + "'"
                     + newContainer.getName() + "', " + "'"
                     + newContainer.getBuilderID() + "'" + ")";
-            //System.err.println("generated SQL" + sql);
+            
             Statement stmt = conn.createStatement();
             stmt.executeUpdate(sql);
             stmt.close();
+            logger.log(Level.INFO, "SYNC IMG: docker insert {0}", containerID);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
