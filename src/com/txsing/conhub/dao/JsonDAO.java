@@ -14,7 +14,7 @@ import org.json.simple.parser.JSONParser;
  *
  * @author txsing
  */
-public class JsonDao {
+public class JsonDAO {
 
     public static JSONObject getRepoJSONInfo() {
         JSONObject jsonObject;
@@ -33,7 +33,7 @@ public class JsonDao {
             jsonObject = (JSONObject) jsonObject.get("Repositories");
             return jsonObject;
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
             return null;
         }
     }
@@ -51,15 +51,15 @@ public class JsonDao {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             CmdExecutor.executeNonInteractiveDockerCMD(cmdParaArray, baos);
             String imageInfoJsonString = baos.toString();
-            //remove the firstCotd pair of bracket, [ {xxxxx} ]
+            
             imageInfoJsonString = imageInfoJsonString.substring(1, 
                     imageInfoJsonString.lastIndexOf(']'));
-            //System.err.println(imageInfoJsonString);
+            
             baos.close();
             jsonObject = (JSONObject) new JSONParser().parse(imageInfoJsonString);
             return jsonObject;
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
             return null;
         }
     }

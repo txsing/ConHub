@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  *
  * @author txsing
  */
-public class ContainerDao {
+public class ContainerDAO {
 
     public static boolean deleteContainerFromDB(String imageID, Connection conn) {
         try {
@@ -33,7 +33,7 @@ public class ContainerDao {
             stmt.close();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
             return false;
         }
     }
@@ -41,7 +41,7 @@ public class ContainerDao {
     public static boolean insertNewContainerIntoDB(String containerID, Connection conn) {
         try {
             Logger logger = Logger.getLogger("com.txsing.conhub.dao");
-            Container newContainer = new Container(JsonDao
+            Container newContainer = new Container(JsonDAO
                     .getImageAndConJSONInfo(containerID));
             
             String sql = "INSERT INTO CONTAINERS VALUES(" + "'"
@@ -59,7 +59,7 @@ public class ContainerDao {
             logger.log(Level.INFO, "SYNC IMG: docker insert {0}", containerID);
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
             return false;
         }
     }
@@ -77,7 +77,7 @@ public class ContainerDao {
             stmt.close();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
         return conLst;
     }
@@ -93,7 +93,7 @@ public class ContainerDao {
                 conDKLst = Arrays.asList(conidLst.split("\n"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
         return conDKLst;
     }

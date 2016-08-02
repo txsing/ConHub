@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  *
  * @author txsing
  */
-public class ImageDao {
+public class ImageDAO {
 
     public static boolean deleteImageFromDB(String imageID, Connection conn) {
         try {
@@ -58,7 +58,7 @@ public class ImageDao {
             String regName, Connection conn) {
         try {
             Logger logger = Logger.getLogger("com.txsing.conhub.dao");
-            Image newImage = new Image(JsonDao.getImageAndConJSONInfo(imageID));
+            Image newImage = new Image(JsonDAO.getImageAndConJSONInfo(imageID));
             String sql = "INSERT INTO IMAGES VALUES (" + "'"
                     + newImage.getImageID() + "', " + "'"
                     + newImage.getParentImageID() + "', " + "'"
@@ -71,9 +71,8 @@ public class ImageDao {
             stmt.close();
             logger.log(Level.INFO, "SYNC IMG: docker insert {0}", imageID);
             
-            //sync corresponding repo
+            /* ###### Sync corresponding REPO ###### */
             Synchro synchro = Synchro.getInstance();
-
             String repoID;
             String repoString = regName + ":" + newImage.getRepo(); //reg:repo
 
@@ -81,13 +80,17 @@ public class ImageDao {
             int index = repoDBLst.get(0).indexOf(repoString);
 
             if (index == -1) {  //new repo, new tag
-                repoID = RepoTagDAO.insertNewRepoIntoDB(conn, newImage.getRepo(), regName);
+                repoID = RepoTagDAO.insertNewRepoIntoDB(conn, newImage.getRepo()
+                        , regName);
                 synchro.repoDBLstAdd(repoString, repoID);
             } else {  //existing repo, new tag
                 repoID = repoDBLst.get(1).get(index);
             }
-
-            RepoTagDAO.insertNewTagIntoDB(conn, newImage.getTag(), newImage.getImageID(), repoID);
+            RepoTagDAO.insertNewTagIntoDB(conn, newImage.getTag()
+                    , newImage.getImageID(), repoID);
+            
+            /* ###### Sync layers ###### */
+            LayerDAO.insertLayersIntoDB(LayerDAO.getLayerIDList(imageID), conn);
             return true;
         } catch (Exception e) {
             System.err.println(e.getMessage());

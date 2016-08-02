@@ -5,9 +5,9 @@
  */
 package com.txsing.conhub.mgprocor;
 
-import com.txsing.conhub.dao.ContainerDao;
-import com.txsing.conhub.dao.ImageDao;
-import com.txsing.conhub.dao.JsonDao;
+import com.txsing.conhub.dao.ContainerDAO;
+import com.txsing.conhub.dao.ImageDAO;
+import com.txsing.conhub.dao.JsonDAO;
 import com.txsing.conhub.dao.RepoTagDAO;
 import com.txsing.conhub.ult.*;
 import java.sql.*;
@@ -46,22 +46,22 @@ public class Synchro {
      */
     public void syncImage() {
         Connection conn = DBConnector.connectPostgres();
-        List<String> imageDBLst = ImageDao.getImageLstFromDB(conn);
-        List<String> imageDKLst = ImageDao.getImageLstFromDocker();
+        List<String> imageDBLst = ImageDAO.getImageLstFromDB(conn);
+        List<String> imageDKLst = ImageDAO.getImageLstFromDocker();
 
         List<String> insertLst = new ArrayList<>();
 
         for (String imageId : imageDKLst) {
             if (!imgConIDContains(imageDBLst, imageId)
                     && !(insertLst.contains(imageId))) {
-                ImageDao.syncNewImageIntoDB(imageId, conn);
+                ImageDAO.syncNewImageIntoDB(imageId, conn);
                 insertLst.add(imageId);
             }
         }
 
         for (String imgId : imageDBLst) {
             if (!imgConIDContains(imageDKLst, imgId)) {
-                ImageDao.deleteImageFromDB(imgId, conn);
+                ImageDAO.deleteImageFromDB(imgId, conn);
                 imageDBLst.remove(imgId);
             }
         }
@@ -84,11 +84,11 @@ public class Synchro {
         Logger logger = Logger.getLogger("com.txsing.conhub.mgprocor");
         try (Connection conn = DBConnector.connectPostgres()) {
             if (eventKind.equals("ENTRY_CREATE")) {
-                ImageDao.syncNewImageIntoDB(imageID, conn);
+                ImageDAO.syncNewImageIntoDB(imageID, conn);
                 logger.log(Level.INFO, "INSERT IMAGE INTO DB: {0}", imageID.substring(0, 12));
             }
             if (eventKind.equals("ENTRY_DELETE")) {
-                ImageDao.deleteImageFromDB(imageID, conn);
+                ImageDAO.deleteImageFromDB(imageID, conn);
                 logger.log(Level.INFO, "DELEFROM IMAGE FROM DB: {0}", imageID.substring(0, 12));
             }
             conn.close();
@@ -103,22 +103,22 @@ public class Synchro {
      */
     public void syncContainer() {
         Connection conn = DBConnector.connectPostgres();
-        List<String> conDBLst = ContainerDao.getContainerLstFromDB(conn);
+        List<String> conDBLst = ContainerDAO.getContainerLstFromDB(conn);
 
-        List<String> conDKLst = ContainerDao.getContainerLstFromDocker();
+        List<String> conDKLst = ContainerDAO.getContainerLstFromDocker();
 
         List<String> insertLst = new ArrayList<>();
 
         for (String conId : conDKLst) {
             if (!imgConIDContains(conDBLst, conId)) {
-                ContainerDao.insertNewContainerIntoDB(conId, conn);
+                ContainerDAO.insertNewContainerIntoDB(conId, conn);
                 insertLst.add(conId);
             }
         }
 
         for (String conId : conDBLst) {
             if (!imgConIDContains(conDKLst, conId)) {
-                ContainerDao.deleteContainerFromDB(conId, conn);
+                ContainerDAO.deleteContainerFromDB(conId, conn);
                 conDBLst.remove(conId);
             }
         }
@@ -141,11 +141,11 @@ public class Synchro {
         Logger logger = Logger.getLogger("com.txsing.conhub.mgprocor");
         try (Connection conn = DBConnector.connectPostgres()) {
             if (eventKind.equals("ENTRY_CREATE")) {
-                ContainerDao.insertNewContainerIntoDB(containerID, conn);
+                ContainerDAO.insertNewContainerIntoDB(containerID, conn);
                 logger.log(Level.INFO, "INSERT IMAGE INTO DB: {0}", containerID.substring(0, 12));
             }
             if (eventKind.equals("ENTRY_DELETE")) {
-                ContainerDao.deleteContainerFromDB(containerID, conn);
+                ContainerDAO.deleteContainerFromDB(containerID, conn);
                 logger.log(Level.INFO, "DELEFROM IMAGE FROM DB: {0}", containerID.substring(0, 12));
             }
             conn.close();
@@ -175,7 +175,7 @@ public class Synchro {
             Logger logger = Logger.getLogger("com.txsing.conhub.mgprocor");
             Connection conn = DBConnector.connectPostgres();
 
-            JSONObject repoJSONObject = JsonDao.getRepoJSONInfo();
+            JSONObject repoJSONObject = JsonDAO.getRepoJSONInfo();
 
             for (Object repokey : repoJSONObject.keySet()) {
                 String repoName = (String) repokey;

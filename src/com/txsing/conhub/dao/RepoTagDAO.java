@@ -33,7 +33,7 @@ public class RepoTagDAO {
             return resultLst;
         } catch (Exception e) {
             System.err.println("Get Tag SQL: " + sql);
-            e.printStackTrace();
+            System.err.println(e.getMessage());
             return null;
         }
     }
@@ -62,7 +62,7 @@ public class RepoTagDAO {
             return result;
         } catch (Exception e) {
             System.err.println("Get Repo SQL: " + getRepoSQL);
-            e.printStackTrace();
+            System.err.println(e.getMessage());
             return null;
         }
     }
@@ -89,7 +89,7 @@ public class RepoTagDAO {
             return repoID;
         } catch (Exception e) {
             System.err.println("INSERT REPO: " + sql);
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
         return null;
     }
@@ -105,7 +105,7 @@ public class RepoTagDAO {
             return true;
         } catch (Exception e) {
             System.err.println("INSERT TAG: " + sql);
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
         return false;
     }
@@ -123,7 +123,7 @@ public class RepoTagDAO {
             }
         } catch(Exception e){
             System.err.println("GET REPO ID: "+sql);
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
         return repoID;
     }

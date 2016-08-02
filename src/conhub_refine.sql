@@ -13,7 +13,7 @@ create table images(
 
 create table containers (
 	conid varchar(64) primary key,
-	imageid varchar(64) references images(imageid),
+	imageid varchar(64) references images(imageid) On Delete Restrict,
 	command text,
 	createdate varchar(36),
 	ports varchar(24),
@@ -32,15 +32,20 @@ insert into registries values('dockerhub','docker.io/library','default docker re
 create table repositories (
 	repoid varchar(18) primary key,
 	reponame varchar(24),
-	regname varchar(24) references registries(regname),
+	regname varchar(24) references registries(regname) On Delete Cascade,
 
 	unique(reponame, regname)
 );
 
 create table tags(
 	tag varchar(24),
-	imageid varchar(64) references images(imageid),
-	repoid varchar(18) references repositories(repoid),
+	imageid varchar(64) references images(imageid) On Delete Cascade,
+	repoid varchar(18) references repositories(repoid) On Delete Cascade,
 
 	primary key(tag, repoid)
+);
+
+create table layercp(
+        child varchar(64),
+        parent varchar(64)
 );
