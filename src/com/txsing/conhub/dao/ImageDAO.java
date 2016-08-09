@@ -27,7 +27,7 @@ public class ImageDAO {
 
     public static boolean deleteImageFromDB(String imageID, Connection conn) {
         try {
-            String sql = "DELETE FROM IMAGES WHERE" + "imageid = '"
+            String sql = "DELETE FROM LAYERS WHERE" + "layerid = '"
                     + imageID + "'";
             Statement stmt = conn.createStatement();
             stmt.executeUpdate(sql);
@@ -54,11 +54,16 @@ public class ImageDAO {
                 conn);
     }
 
-    public static boolean syncNewImageIntoDB(String imageID,
+    public static boolean syncNewImageIntoDB(String shortImageID,
             String regName, Connection conn) {
         try {
-            Logger logger = Logger.getLogger("com.txsing.conhub.dao");
-            Image newImage = new Image(JsonDAO.getImageAndConJSONInfo(imageID));
+            /* ###### Insert Layers ###### */
+            LayerDAO.insertLayersIntoDB(LayerDAO.getLayerIDList(shortImageID)
+                    , conn);
+            
+            /* ###### Insert New Image #### */
+            Logger logger = Logger.getLogger("logFile");
+            Image newImage = new Image(JsonDAO.getImageAndConJSONInfo(shortImageID));
             String sql = "INSERT INTO IMAGES VALUES (" + "'"
                     + newImage.getImageID() + "', " + "'"
                     + newImage.getParentImageID() + "', " + "'"
@@ -69,9 +74,9 @@ public class ImageDAO {
             Statement stmt = conn.createStatement();
             stmt.executeUpdate(sql);
             stmt.close();
-            logger.log(Level.INFO, "SYNC IMG: docker insert {0}", imageID);
+            logger.log(Level.INFO, "SYNC IMG: docker insert {0}", shortImageID);
             
-            /* ###### Sync corresponding REPO ###### */
+            /* ###### Insert Corresponding REPO ###### */
             Synchro synchro = Synchro.getInstance();
             String repoID;
             String repoString = regName + ":" + newImage.getRepo(); //reg:repo
@@ -86,11 +91,9 @@ public class ImageDAO {
             } else {  //existing repo, new tag
                 repoID = repoDBLst.get(1).get(index);
             }
-            RepoTagDAO.insertNewTagIntoDB(conn, newImage.getTag()
-                    , newImage.getImageID(), repoID);
             
-            /* ###### Sync layers ###### */
-            LayerDAO.insertLayersIntoDB(LayerDAO.getLayerIDList(imageID), conn);
+            RepoTagDAO.insertNewTagIntoDB(conn, newImage.getTag()
+                    , newImage.getImageID(), repoID);                        
             return true;
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -123,6 +126,7 @@ public class ImageDAO {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             CmdExecutor.executeNonInteractiveDockerCMD(cmdParaArray, baos);
             String imageidLst = baos.toString();
+            baos.close();
             if (!imageidLst.equals("")) {
                 imageDKLst = Arrays.asList(imageidLst.split("\n"));
             }

@@ -28,6 +28,7 @@ public class LayerDAO {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             CmdExecutor.executeNonInteractiveDockerCMD(cmdParaArray, baos);
             String layerIDLstString = baos.toString();
+            baos.close();
             if (!layerIDLstString.equals("")) {
                 layerIDLst = Arrays.asList(layerIDLstString.split("\n"));
             }
@@ -47,15 +48,21 @@ public class LayerDAO {
         try {
             Statement stmt = conn.createStatement();
             String sql = null;
-            for (int i = 0; i < layerIDLst.size() - 1; i++) {
-                String layerChild = layerIDLst.get(i);
-                String layerParents = layerIDLst.get(i + 1);
-                sql = "INSERT INTO layercp VALUES ('"
-                        + layerChild + "', '"
-                        + layerParents + "')";
+            
+            sql = "INSERT INTO layers VALUES ('"
+                    + layerIDLst.get(layerIDLst.size()-1) + "', null)";
+            stmt.executeUpdate(sql);
+            
+            for (int i = layerIDLst.size() - 2; i >=0; i--) {
+                String layerid = layerIDLst.get(i);
+                String layerParent = layerIDLst.get(i + 1);
+                sql = "INSERT INTO layers VALUES ('"
+                        + layerid + "', '"
+                        + layerParent + "')";
                 stmt.executeUpdate(sql);
                 System.err.println(sql);
             }
+
             return true;
         } catch (Exception e) {
             System.err.println(e.getMessage());

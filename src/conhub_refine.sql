@@ -2,13 +2,20 @@
 drop database consql;
 create database consql;
 \c consql
+
+create table layers(
+        layerid varchar(64) primary key,
+        parent varchar(64) references layers(layerid) On Delete Cascade
+);
+
 create table images(
-	imageid varchar(64) primary key,
+	imageid varchar(64) unique not null,
 	parentimageid varchar(64),
 	dockerfileid varchar(12),
 	size numeric(10),
 	author varchar(24),
-	builder varchar(24)
+	builder varchar(24),
+        foreign key (imageid) references layers(layerid)
 );
 
 create table containers (
@@ -45,7 +52,3 @@ create table tags(
 	primary key(tag, repoid)
 );
 
-create table layercp(
-        child varchar(64),
-        parent varchar(64)
-);

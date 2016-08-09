@@ -89,6 +89,8 @@ public class ContainerDAO {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             CmdExecutor.executeNonInteractiveDockerCMD(cmdParaArray, baos);
             String conidLst = baos.toString();
+            baos.close();
+            
             if (!conidLst.equals("")) {
                 conDKLst = Arrays.asList(conidLst.split("\n"));
             }
