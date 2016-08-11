@@ -19,11 +19,11 @@ import java.util.List;
  */
 public class LayerDAO {
 
-    public static List<String> getLayerIDList(String imageID) {
+    public static List<String> getLayerIDList(String shortOrLongImageID) {
         List<String> layerIDLst = new ArrayList<>();
         List<String> layerIDLstAftProcess = new ArrayList<>();
 
-        String[] cmdParaArray = {"docker", "history", imageID, "-q", "--no-trunc"};
+        String[] cmdParaArray = {"docker", "history", shortOrLongImageID, "-q", "--no-trunc"};
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             CmdExecutor.executeNonInteractiveDockerCMD(cmdParaArray, baos);

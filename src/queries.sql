@@ -1,12 +1,23 @@
 WITH RECURSIVE parents(id, visited) AS(
 	SELECT parent, 
                ARRAY[]::varchar[]
-        FROM layers WHERE layerid = '5'
+        FROM layers WHERE layerid = 'ef5b73c27f8a9b32c457402e7984e051a66735c5e42adef2c63e775bbeb1cb0a'
 	UNION
 	SELECT layers.parent, 
                (visited || parents.id)
         FROM parents, layers WHERE layers.layerid = parents.id
 	AND parents.id NOT IN (SELECT imageid FROM images)
+        AND NOT parents.id = ANY(visited)
+) SELECT imageid FROM parents, images WHERE images.imageid = parents.id;
+
+WITH RECURSIVE parents(id, visited) AS(
+	SELECT parent, 
+               ARRAY[]::varchar[]
+        FROM layers WHERE layerid = 'ef5b73c27f8a9b32c457402e7984e051a66735c5e42adef2c63e775bbeb1cb0a'
+	UNION
+	SELECT layers.parent, 
+               (visited || parents.id)
+        FROM parents, layers WHERE layers.layerid = parents.id
         AND NOT parents.id = ANY(visited)
 ) SELECT imageid FROM parents, images WHERE images.imageid = parents.id;
 
@@ -19,8 +30,7 @@ WITH RECURSIVE parents(id, visited) AS(
                (visited || parents.id)
         FROM parents, layers WHERE layers.layerid = parents.id
         AND NOT parents.id = ANY(visited)
-) SELECT imageid FROM parents, images WHERE images.imageid = parents.id;
-
+) SELECT id FROM parents;
 
 create table layers(
         layerid varchar primary key,

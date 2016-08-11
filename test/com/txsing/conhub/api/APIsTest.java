@@ -5,15 +5,19 @@
  */
 package com.txsing.conhub.api;
 
+
+import java.sql.*;
+import com.txsing.conhub.ult.*;
+import java.util.List;
 /**
  *
  * @author txsing
  */
 public class APIsTest {
        public static void main(String[] args) {
-        String result = APIs.
-                getParentalImageID("f2c9d526ae6686e285949e4bb1dd2d37fa2985a58528bcaba6b15a9571e8d412");
-           System.out.println(result);
+           Connection conn = DBConnector.connectPostgres();
+           String result = APIs.getParentalImageID("ef5b", conn);
+           System.err.println(result);
     }
     
 }

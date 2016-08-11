@@ -121,7 +121,8 @@ public class ImageDAO {
 
     public static List<String> getImageLstFromDocker() {
         List<String> imageDKLst = new ArrayList<>();
-        String[] cmdParaArray = {"docker", "images", "-q"};
+        List<String> imageDKLstAftProcessing = new ArrayList<>();
+        String[] cmdParaArray = {"docker", "images", "-q", "--no-trunc"};
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             CmdExecutor.executeNonInteractiveDockerCMD(cmdParaArray, baos);
@@ -133,7 +134,11 @@ public class ImageDAO {
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
-        return imageDKLst;
+        for(String imgid : imageDKLst){
+            imageDKLstAftProcessing.add(imgid.substring(7));
+        }
+        
+        return imageDKLstAftProcessing;
     }
 
 }

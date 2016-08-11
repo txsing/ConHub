@@ -52,7 +52,7 @@ public class Synchro {
         List<String> insertLst = new ArrayList<>();
 
         for (String imageId : imageDKLst) {
-            if (!imgConIDContains(imageDBLst, imageId)
+            if (!imageDBLst.contains(imageId)
                     && !(insertLst.contains(imageId))) {
                 ImageDAO.syncNewImageIntoDB(imageId, conn);
                 insertLst.add(imageId);
@@ -60,7 +60,7 @@ public class Synchro {
         }
 
         for (String imgId : imageDBLst) {
-            if (!imgConIDContains(imageDKLst, imgId)) {
+            if (!imageDKLst.contains(imgId)) {
                 ImageDAO.deleteImageFromDB(imgId, conn);
                 imageDBLst.remove(imgId);
             }
@@ -110,14 +110,14 @@ public class Synchro {
         List<String> insertLst = new ArrayList<>();
 
         for (String conId : conDKLst) {
-            if (!imgConIDContains(conDBLst, conId)) {
+            if (conDBLst.contains(conId)) {
                 ContainerDAO.insertNewContainerIntoDB(conId, conn);
                 insertLst.add(conId);
             }
         }
 
         for (String conId : conDBLst) {
-            if (!imgConIDContains(conDKLst, conId)) {
+            if (conDKLst.contains(conId)) {
                 ContainerDAO.deleteContainerFromDB(conId, conn);
                 conDBLst.remove(conId);
             }
@@ -241,23 +241,23 @@ public class Synchro {
 
     }
 
-    /**
-     * *
-     * the full length of imageid or conid is 64(long id). However "docker
-     * ps/images" will only return the starting part of the id (short id).
-     *
-     * @param ids
-     * @param longOrShortId
-     * @return
-     */
-    private boolean imgConIDContains(List<String> ids, String longOrShortId) {
-        for (String id : ids) {
-            if (longOrShortId.startsWith(id) || id.startsWith(longOrShortId)) {
-                return true;
-            }
-        }
-        return false;
-    }
+//    /**
+//     * *
+//     * the full length of imageid or conid is 64(long id). However "docker
+//     * ps/images" will only return the starting part of the id (short id).
+//     *
+//     * @param ids
+//     * @param longOrShortId
+//     * @return
+//     */
+//    private boolean imgConIDContains(List<String> ids, String longOrShortId) {
+//        for (String id : ids) {
+//            if (longOrShortId.startsWith(id) || id.startsWith(longOrShortId)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     public void repoDBLstAdd(String regColonRepo, String repoID) {
         this.repoDBLst.get(0).add(regColonRepo);
