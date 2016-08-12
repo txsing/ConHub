@@ -17,14 +17,11 @@ import java.util.*;
 public class APIs {
 
     public static String getParentalImageID(String imageID,
-            Connection conn) {
+            Connection conn) throws Exception{
+        
         String fullImageID = null;
-        try {
-            fullImageID = Helper.getFullID(imageID, ImageDAO.getImageLstFromDocker());
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-        }
-        System.err.println(fullImageID);
+        fullImageID = Helper.getFullID(imageID, ImageDAO.getImageLstFromDocker());
+       
         if(fullImageID == null){
             return null;
         }
@@ -50,7 +47,10 @@ public class APIs {
         return null;
     }
 
-    public static List<String> getParentalImageIDsList(String fullImageID, Connection conn) {
+    public static List<String> getParentalImageIDsList(String imageID, Connection conn) throws Exception{
+        String fullImageID = null;
+        fullImageID = Helper.getFullID(imageID, ImageDAO.getImageLstFromDocker());
+        
         List<String> parentIDLst = new ArrayList<String>();
         String sql = "WITH RECURSIVE parents(id, visited) AS("
                 + " SELECT parent, ARRAY[]::varchar[] FROM layers WHERE layerid = '" + fullImageID + "'"
@@ -74,9 +74,12 @@ public class APIs {
         return parentIDLst;
     }
     
-    public static String getIntersection(String imageID1, String imageID2){
-        List<String> layersLst1 = LayerDAO.getLayerIDList(imageID1);
-        List<String> layersLst2 = LayerDAO.getLayerIDList(imageID2);
+    public static String getIntersection(String imageID1, String imageID2) throws Exception{
+        String fullid1 = Helper.getFullID(imageID1, ImageDAO.getImageLstFromDocker());
+        String fullid2 = Helper.getFullID(imageID2, ImageDAO.getImageLstFromDocker());
+        
+        List<String> layersLst1 = LayerDAO.getLayerIDList(fullid1);
+        List<String> layersLst2 = LayerDAO.getLayerIDList(fullid2);
         
         for(String layerid1 : layersLst1){
             if(layersLst2.contains(layerid1)){

@@ -22,22 +22,32 @@ public class Helper {
      *          1: The given short ID can uniquely refer to one full ID.
      */
     public static String getFullID(String shortID, List<String> fullIDLst) throws Exception{
+        if(shortID == null || shortID.length() == 0){
+            throw new Exception("ID EMPTY");
+        }
+        
+        if(shortID.length() == 64){
+            if(fullIDLst.contains(shortID))
+                return shortID;
+            else{
+                throw new Exception("ID: '"+shortID+"' NO FOUND");
+            }
+        }
         boolean firstOccur = false;
         String result = null;
-        for(String fullid : fullIDLst){
-            System.err.println(fullid+"::"+shortID);
+        for(String fullid : fullIDLst){           
             if(fullid.startsWith(shortID)){
                 if(!firstOccur){
                     firstOccur = true;
                     result = fullid;
                 }
                 else{
-                    throw new Exception("ID AMBIGUOUS");
+                    throw new Exception("AMBIGUOUS ID: "+shortID);
                 }
             }
         }
         if(!firstOccur){
-            throw new Exception("NO MATCH FOUND");
+            throw new Exception("ID: '"+shortID+"' NO MATCH");
         }
         return result;
     }

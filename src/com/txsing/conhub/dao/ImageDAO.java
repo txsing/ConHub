@@ -54,16 +54,16 @@ public class ImageDAO {
                 conn);
     }
 
-    public static boolean syncNewImageIntoDB(String shortImageID,
+    public static boolean syncNewImageIntoDB(String imageID,
             String regName, Connection conn) {
         try {
             /* ###### Insert Layers ###### */
-            LayerDAO.insertLayersIntoDB(LayerDAO.getLayerIDList(shortImageID)
+            LayerDAO.insertLayersIntoDB(LayerDAO.getLayerIDList(imageID)
                     , conn);
             
             /* ###### Insert New Image #### */
             Logger logger = Logger.getLogger("logFile");
-            Image newImage = new Image(JsonDAO.getImageAndConJSONInfo(shortImageID));
+            Image newImage = new Image(JsonDAO.getImageAndConJSONInfo(imageID));
             String sql = "INSERT INTO IMAGES VALUES (" + "'"
                     + newImage.getImageID() + "', " + "'"
                     + newImage.getParentImageID() + "', " + "'"
@@ -74,7 +74,7 @@ public class ImageDAO {
             Statement stmt = conn.createStatement();
             stmt.executeUpdate(sql);
             stmt.close();
-            logger.log(Level.INFO, "SYNC IMG: docker insert {0}", shortImageID);
+            logger.log(Level.INFO, "SYNC IMG: docker insert {0}", imageID);
             
             /* ###### Insert Corresponding REPO ###### */
             Synchro synchro = Synchro.getInstance();
@@ -135,7 +135,11 @@ public class ImageDAO {
             System.err.println(e.getMessage());
         }
         for(String imgid : imageDKLst){
-            imageDKLstAftProcessing.add(imgid.substring(7));
+            String imageidAftProcessing = imgid.substring(7);
+            //oringal imageid list can contains duplicate ids (the same image with two different repo:tag)
+            if(!imageDKLstAftProcessing.contains(imageidAftProcessing)){
+                imageDKLstAftProcessing.add(imgid.substring(7));
+            }
         }
         
         return imageDKLstAftProcessing;

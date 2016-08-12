@@ -10,28 +10,6 @@ WITH RECURSIVE parents(id, visited) AS(
         AND NOT parents.id = ANY(visited)
 ) SELECT imageid FROM parents, images WHERE images.imageid = parents.id;
 
-WITH RECURSIVE parents(id, visited) AS(
-	SELECT parent, 
-               ARRAY[]::varchar[]
-        FROM layers WHERE layerid = 'ef5b73c27f8a9b32c457402e7984e051a66735c5e42adef2c63e775bbeb1cb0a'
-	UNION
-	SELECT layers.parent, 
-               (visited || parents.id)
-        FROM parents, layers WHERE layers.layerid = parents.id
-        AND NOT parents.id = ANY(visited)
-) SELECT imageid FROM parents, images WHERE images.imageid = parents.id;
-
-WITH RECURSIVE parents(id, visited) AS(
-	SELECT parent, 
-               ARRAY[]::varchar[]
-        FROM layers WHERE layerid = '5'
-	UNION
-	SELECT layers.parent, 
-               (visited || parents.id)
-        FROM parents, layers WHERE layers.layerid = parents.id
-        AND NOT parents.id = ANY(visited)
-) SELECT id FROM parents;
-
 create table layers(
         layerid varchar primary key,
         parent varchar references layers(layerid) On Delete Cascade
@@ -48,7 +26,11 @@ Insert into layers values('3','2');
 Insert into layers values('4','3');
 Insert into layers values('5','4');
 Insert into layers values('6','5');
+INSERT INTO layers("layerid", "parent") SELECT '7', '6' WHERE NOT EXISTS(SELECT layerid, parent FROM layers WHERE layerid = '7');
 
 Insert into images values('1');
 Insert into images values('3');
 Insert into images values('5');
+
+
+SELECT 

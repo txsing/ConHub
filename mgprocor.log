@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2016-08-12T16:49:19</date>
+  <millis>1470991759275</millis>
+  <sequence>2</sequence>
+  <logger>com.txsing.conhub.mgprocor</logger>
+  <level>INFO</level>
+  <class>com.txsing.conhub.mgprocor.DockerFileWatcher</class>
+  <method>processEvents</method>
+  <thread>15</thread>
+  <message>DIR: /var/lib/docker/image/aufs/ MONITORED</message>
+</record>
+</log>

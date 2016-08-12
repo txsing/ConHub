@@ -48,19 +48,22 @@ public class LayerDAO {
         try {
             Statement stmt = conn.createStatement();
             String sql = null;
-            
-            sql = "INSERT INTO layers VALUES ('"
-                    + layerIDLst.get(layerIDLst.size()-1) + "', null)";
+            sql = "INSERT INTO layers(\"layerid\", \"parent\") SELECT '"
+                    + layerIDLst.get(layerIDLst.size() - 1) + "', 'null' "
+                    + "WHERE NOT EXISTS(SELECT layerid, parent FROM layers WHERE layerid = '"
+                    + layerIDLst.get(layerIDLst.size() - 1) + "');";
             stmt.executeUpdate(sql);
-            
-            for (int i = layerIDLst.size() - 2; i >=0; i--) {
+
+            for (int i = layerIDLst.size() - 2; i >= 0; i--) {
                 String layerid = layerIDLst.get(i);
                 String layerParent = layerIDLst.get(i + 1);
-                sql = "INSERT INTO layers VALUES ('"
-                        + layerid + "', '"
-                        + layerParent + "')";
+                
+                sql = "INSERT INTO layers(\"layerid\", \"parent\") SELECT '"
+                        + layerid + "', '"+layerParent+"' "
+                        + "WHERE NOT EXISTS(SELECT layerid, parent FROM layers WHERE layerid = '"
+                        + layerid + "');";
+                
                 stmt.executeUpdate(sql);
-                System.err.println(sql);
             }
 
             return true;

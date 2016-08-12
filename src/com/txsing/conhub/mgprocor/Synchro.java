@@ -117,7 +117,7 @@ public class Synchro {
         }
 
         for (String conId : conDBLst) {
-            if (conDKLst.contains(conId)) {
+            if (!conDKLst.contains(conId)) {
                 ContainerDAO.deleteContainerFromDB(conId, conn);
                 conDBLst.remove(conId);
             }
