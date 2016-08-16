@@ -8,7 +8,6 @@ package com.txsing.conhub.dao;
 import com.txsing.conhub.object.Image;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;

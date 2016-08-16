@@ -5,6 +5,7 @@
  */
 package com.txsing.conhub.mgprocor;
 
+import com.txsing.conhub.api.APIs;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,23 +20,23 @@ import com.txsing.conhub.ult.*;
 public class Parser {
 
     static String pattern_inter = "(INTERSECTION\\()([\\w]+)(,\\s*)([\\w]+)(\\))";
-    static String pattern_child = "(CHILD)(\\()(.{2})(\\))";
+    static String pattern_child = "(child)(\\()(.{64})(\\))";
     static String pattern_tag = "(TAG\\()(\\w+)(,\\s*)(select.*)";
 
-    public static void main(String[] args) throws SQLException {
-        String sql1 = "select * from image where imgid1 = INTERSECTION(12, 34) and imgid2 = INTERSECTION(13,14);";
-        String sql2 = "select * from img where img.id IN CHILD(11) and img.id not in CHILD(09)";
-
-        String sql4 = "select container.conid,image.imageid "
-                + "from container,image "
-                + "where image.imageid in "
-                + "CHILD(INTERSECTION(12,22)) "
-                + "and image.imageid=container.imageid";
-        String sql3 = "TAG(test," + sql4 + ")";
-        Connection connection = DBConnector.connectPostgres();
-        parseExecuteConSQL(connection, sql3);
-        connection.close();
-    }
+//    public static void main(String[] args) throws SQLException {
+//        String sql1 = "select * from image where imgid1 = INTERSECTION(12, 34) and imgid2 = INTERSECTION(13,14);";
+//        String sql2 = "select * from img where img.id IN CHILD(11) and img.id not in CHILD(09)";
+//
+//        String sql4 = "select container.conid,image.imageid "
+//                + "from container,image "
+//                + "where image.imageid in "
+//                + "CHILD(INTERSECTION(12,22)) "
+//                + "and image.imageid=container.imageid";
+//        String sql3 = "TAG(test," + sql4 + ")";
+//        Connection connection = DBConnector.connectPostgres();
+//        parseExecuteConSQL(connection, sql3);
+//        connection.close();
+//    }
 
     public static void parseExecuteConSQL(Connection connection, String input) {
         if (input.contains("INTERSECTION(")) {
@@ -104,34 +105,35 @@ public class Parser {
         return result;
     }
 
-    public static String parseChild(Connection connection, String input) {
+    public static String parseChild(Connection conn, String input) {
         Pattern childp = Pattern.compile(pattern_child);
         Matcher matcher = childp.matcher(input);
         String result = input;
 
         int count = 0;
         while (matcher.find()) {
-            count++;
-            String id = matcher.group(3);
-            String childIds[] = child(id);
-
+            
             try {
-                // Connection connection = DBConnector.connectPostgres(url,
-                // user, passwd);
-                Statement statement = connection.createStatement();
-
+                count++;
+                String id = matcher.group(3);
+                
+                String childIds[] = APIs.getChildImgList(id, conn).toArray(new String[0]);
+                
+                Statement statement = conn.createStatement();
                 // create temporary table to store ids of the child images
                 String tempTableSQL = "create temp table tempimglst" + count + "(ids varchar(64))";
                 statement.execute(tempTableSQL);
 
                 // insert data into the temp table
                 for (int i = 0; i < childIds.length; i++) {
-                    String insertSQL = "insert into tempimglst" + count + " values(+" + childIds[i] + ")";
+                    String insertSQL = "insert into tempimglst" + count + " values('" + childIds[i] + "')";
+                    System.err.println(insertSQL);
                     statement.execute(insertSQL);
                 }
                 result = result.replace(matcher.group(), "(select * from tempimglst" + count + ")");
-            } catch (SQLException e) {
-                e.printStackTrace();
+                System.err.println(matcher.group());
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
             }
         }
 
