@@ -17,13 +17,22 @@ import java.sql.Statement;
 public class ParserTest {
 
     public static void main(String[] args) {
-        parserChildTest("select reponame, tag from repositories, tags, images "
-                + "where images.imageid IN child(42118e3df429f09ca581a9deb3df274601930e428e452f7e4e9f1833c56a100a) "
-                + "AND tags.imageid = images.imageid AND tags.repoid = repositories.repoid");
+//        parseChildTest("select reponame, tag from repositories, tags, images "
+//                + "where images.imageid IN child(42118e3) "
+//                + "AND tags.imageid = images.imageid AND tags.repoid = repositories.repoid");
+        parseIntesectionTest("where image.id = intersect(7dbdd, ef5b7)");
 
     }
 
-    static void parserChildTest(String sql) {
+    static void parseIntesectionTest(String sql){
+        try {
+            String newSQL = Parser.parseIntersect(sql);
+            System.out.println(newSQL);        
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }       
+    }
+    static void parseChildTest(String sql) {
         try {
             Connection conn = DBConnector.connectPostgres();
             Statement stmt = conn.createStatement();

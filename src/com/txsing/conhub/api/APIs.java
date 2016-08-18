@@ -114,5 +114,8 @@ public class APIs {
         }
         return null;
     }
-
+    
+    public static boolean tag(String[] idList){
+        return false;
+    }
 }

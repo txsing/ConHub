@@ -92,7 +92,7 @@ public class Parser {
 	}
 
 	public static String parseIntersect(String input) {
-		Pattern interp = Pattern.compile(Constants.PATTERN_INTER);
+		Pattern interp = Pattern.compile(Constants.PATTERN_INTERSECT);
 		Matcher matcher = interp.matcher(input);
 		String result = input;
 		String id1, id2;
