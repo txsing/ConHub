@@ -71,7 +71,7 @@ public class main {
             repoWatcher.start();
         } catch (Exception e) {
             System.err.println("Failed to start monitor service!");
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
     }
 }

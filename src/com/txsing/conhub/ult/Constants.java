@@ -30,7 +30,8 @@ public class Constants {
     public static final String API_DIS = "distance";
     
     //Parser Strings
-    public static final String PATTERN_INTERSECT = "(intersect)(\\()(.{1,64})(,\\s*)(.{1,64})(\\))"; //INTERSECTION(arg1, arg2)
+    public static final String PATTERN_INTERSECT = "(intersection)"
+            + "(\\()(')(.{1,64})(')(,\\s*)(')([^\\)]{1,64})(')(\\))"; //INTERSECTION('arg1', 'arg2')
     public static final String PATTERN_CHILD = "(child)(\\()(.{1,64})(\\))"; //CHILD(arg)
     public static final String PATTERN_TAG = "(tag\\()([\\w]+)(,\\s*)(select.*)"; //TAG(label, sql)
     public static final String PATTERN_DIS = "(distance\\()([\\w]+)(,\\s*)([\\w]+)(\\))";

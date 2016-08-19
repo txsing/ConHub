@@ -8,15 +8,23 @@ create table layers(
         parent varchar(64) references layers(layerid) On Delete Cascade
 );
 
+
+create table users(
+        userid varchar(24) primary key,
+        passwd varchar(12) not null,
+        email  varchar(36)
+)
+
+
 create table images(
 	imageid varchar(64) unique not null,
 	parentimageid varchar(64),
 	dockerfileid varchar(12),
 	size numeric(10),
 	author varchar(24),
-	builder varchar(24),
         foreign key (imageid) references layers(layerid)
 );
+
 
 create table containers (
 	conid varchar(64) primary key,
@@ -27,6 +35,20 @@ create table containers (
 	name varchar(24),
 	builder varchar(24)
 );
+
+
+create table dockerfiles(
+        fileid varchar(24) primary key,
+        author varchar(24) references users(userid)
+);
+
+
+create table fileToImage(
+        imageid varchar(64) references images(imageid),
+        fileid  varchar(64) references dockerfiles(fileid),
+        builder varchar(24) references users(userid)
+);
+
 
 create table registries(
 	regname varchar(24) primary key,
@@ -51,4 +73,10 @@ create table tags(
 
 	primary key(tag, repoid)
 );
+
+create table labels(
+        label varchar(24),
+        id    varchar(64)
+);
+
 

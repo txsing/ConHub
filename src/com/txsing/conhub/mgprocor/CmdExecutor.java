@@ -35,16 +35,24 @@ public class CmdExecutor {
      * send SQL queries to Database
      */
     public static List<String> sendCmdToDB(String cmd) {
+        List<String> result = null;
         try {
             Connection conn = DBConnector.connectPostgres(
                     Constants.DB_POSTGRES_URL,
                     Constants.DB_POSTGRES_USER,
                     Constants.DB_POSTGRES_PASSWORD);
-            return executeSQL(conn, cmd);
+            cmd = Parser.parseCQL(conn, cmd);
+            if(!cmd.startsWith("TAG: ")){
+                result = executeSQL(conn, cmd);
+            }else{
+                result = new ArrayList<>();
+                result.add(cmd);
+            }            
+            conn.close();
         } catch (Exception e) {
             System.err.println(e.getMessage());
-            return null;
         }
+        return result;
     }
 
     public static List<String> executeSQL(Connection conn, String sql) {

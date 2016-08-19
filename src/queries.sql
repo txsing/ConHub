@@ -54,5 +54,4 @@ Insert into images values('1');
 Insert into images values('3');
 Insert into images values('5');
 
-
-SELECT 
+select I.imageid from Images I where I.imageid in CHILD(INTERSECTION(ef5b,7dbdd))

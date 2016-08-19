@@ -115,7 +115,7 @@ public class APIs {
         return null;
     }
     
-    public static boolean tag(String[] idList){
+    public static boolean tag(String[] idList, String label){
         return false;
     }
 }

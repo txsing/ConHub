@@ -13,22 +13,24 @@ import com.txsing.conhub.ult.*;
  *
  * @author txsing
  */
-public class Parser {    
-    public static void parseExecuteCQL(Connection connection, String input) {
-        if (input.contains("INTERSECTION(")) {
+public class Parser {
+
+    public static String parseCQL(Connection connection, String input) {
+        if (input.contains("intersection(")) {
             input = parseIntersect(input);
-            System.out.println(input);
+            //System.out.println(input);
         }
-        if (input.contains("CHILD(")) {
+        
+        if (input.contains("child(")) {
             input = parseChild(connection, input);
-            System.out.println(input);
+            //System.out.println(input);
         }
+        
         // parse and execute conSQL starting with TAG function
-        if (input.startsWith("TAG(")) {
-            parseExecuteTag(connection, input);
-        } // execute regular SQL (after parsed from ConSQL)
-        else {
-            executeSQL(connection, input);
+        if (input.startsWith("tag(")) {
+            return parseExecuteTag(connection, input);
+        }else{ // execute regular SQL (after parsed from ConSQL)
+            return input;
         }
     }
 
@@ -43,27 +45,29 @@ public class Parser {
         return null;
     }
 
-    public static void parseExecuteTag(Connection connection, String input) {
+    public static String parseExecuteTag(Connection connection, String input) {
         Pattern tagp = Pattern.compile(Constants.API_TAG);
         Matcher matcher = tagp.matcher(input);
+        String label = "";
         if (matcher.find()) {
             String sql = matcher.group(4);
             sql = sql.substring(0, sql.length() - 1);
-            System.err.println(matcher.group(2));
+            label = matcher.group(2);
+            
             try {
                 Statement statement = connection.createStatement();
                 ResultSet rs = statement.executeQuery(sql);
-                List<String> ids = new ArrayList<String>();
+                List<String> ids = new ArrayList<>();
                 while (rs.next()) {
                     ids.add(rs.getString(1));
                 }
-                System.err.println(matcher.group(1));
                 
-                APIs.tag(ids.toArray(new String[ids.size()]));
+                APIs.tag(ids.toArray(new String[ids.size()]), label);
             } catch (Exception e) {
                 System.err.println(e.getMessage());
             }
         }
+        return "TAG: "+ label;
 
     }
 
@@ -77,10 +81,10 @@ public class Parser {
                 // System.out.println(matcher.group(0));
                 id1 = matcher.group(3);
                 id2 = matcher.group(5);
-                result = result.replace(matcher.group(), "'"+APIs.getIntersection(id1, id2))+"'";
+                result = result.replace(matcher.group(), "'" + APIs.getIntersection(id1, id2)) + "'";
             }
         } catch (Exception e) {
-                System.err.println(e.getMessage());
+            System.err.println(e.getMessage());
         }
         return result;
     }

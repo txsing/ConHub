@@ -20,7 +20,9 @@ public class ParserTest {
 //        parseChildTest("select reponame, tag from repositories, tags, images "
 //                + "where images.imageid IN child(42118e3) "
 //                + "AND tags.imageid = images.imageid AND tags.repoid = repositories.repoid");
-        parseIntesectionTest("where image.id = intersect(7dbdd, ef5b7)");
+        Connection conn = DBConnector.connectPostgres();
+        String output = Parser.parseCQL(conn, "select I.imageid from Images I where I.imageid in child(intersection(ef5b,7dbdd))");
+        System.err.println(output);
 
     }
 
