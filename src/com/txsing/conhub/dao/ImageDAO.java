@@ -27,14 +27,14 @@ public class ImageDAO {
 
     public static boolean deleteImageFromDB(String imageID, Connection conn) {
         try {
-            String sql = "DELETE FROM LAYERS WHERE" + "layerid = '"
+            String sql = "DELETE FROM LAYERS WHERE" + " layerid = '"
                     + imageID + "'";
             Statement stmt = conn.createStatement();
             stmt.executeUpdate(sql);
             stmt.close();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
             return false;
         }
     }
@@ -56,6 +56,7 @@ public class ImageDAO {
 
     public static boolean syncNewImageIntoDB(String imageID,
             String regName, Connection conn) {
+        String sql = null;
         try {
             /* ###### Insert Layers ###### */
             LayerDAO.insertLayersIntoDB(LayerDAO.getLayerIDList(imageID)
@@ -64,13 +65,12 @@ public class ImageDAO {
             /* ###### Insert New Image #### */
             Logger logger = Logger.getLogger("logFile");
             Image newImage = new Image(JsonDAO.getImageAndConJSONInfo(imageID));
-            String sql = "INSERT INTO IMAGES VALUES (" + "'"
+            sql = "INSERT INTO IMAGES VALUES (" + "'"
                     + newImage.getImageID() + "', " + "'"
-                    + newImage.getParentImageID() + "', " + "'"
+                    //+ newImage.getParentImageID() + "', " + "'"
                     + newImage.getDockerFileID() + "', "
                     + newImage.getSize() + ", " + "'"
-                    + newImage.getAuthor() + "', " + "'"
-                    + newImage.getBuilderID() + "'" + ")";
+                    + newImage.getAuthor() + "')";
             Statement stmt = conn.createStatement();
             stmt.executeUpdate(sql);
             stmt.close();
@@ -93,9 +93,11 @@ public class ImageDAO {
             }
             
             RepoTagDAO.insertNewTagIntoDB(conn, newImage.getTag()
-                    , newImage.getImageID(), repoID);                        
+                    , newImage.getImageID(), repoID);  
+            System.err.println("Tag: "+newImage.getTag());
             return true;
         } catch (Exception e) {
+            System.err.println(sql);
             System.err.println(e.getMessage());
             return false;
         }

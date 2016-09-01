@@ -13,16 +13,15 @@ create table users(
         userid varchar(24) primary key,
         passwd varchar(12) not null,
         email  varchar(36)
-)
+);
 
 
 create table images(
 	imageid varchar(64) unique not null,
-	parentimageid varchar(64),
 	dockerfileid varchar(12),
 	size numeric(10),
 	author varchar(24),
-        foreign key (imageid) references layers(layerid)
+        foreign key (imageid) references layers(layerid) On Delete Restrict
 );
 
 

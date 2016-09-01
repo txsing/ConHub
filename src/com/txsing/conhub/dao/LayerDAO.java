@@ -45,15 +45,17 @@ public class LayerDAO {
 
     public static boolean insertLayersIntoDB(List<String> layerIDLst,
             Connection conn) {
+        String sql = null;
         try {
             Statement stmt = conn.createStatement();
-            String sql = null;
+            
             sql = "INSERT INTO layers(\"layerid\", \"parent\") SELECT '"
-                    + layerIDLst.get(layerIDLst.size() - 1) + "', 'null' "
+                    + layerIDLst.get(layerIDLst.size() - 1) + "', null "
                     + "WHERE NOT EXISTS(SELECT layerid, parent FROM layers WHERE layerid = '"
                     + layerIDLst.get(layerIDLst.size() - 1) + "');";
+            
             stmt.executeUpdate(sql);
-
+            
             for (int i = layerIDLst.size() - 2; i >= 0; i--) {
                 String layerid = layerIDLst.get(i);
                 String layerParent = layerIDLst.get(i + 1);

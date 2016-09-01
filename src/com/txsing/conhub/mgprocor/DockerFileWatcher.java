@@ -147,8 +147,8 @@ public class DockerFileWatcher extends Thread {
                     } catch (InterruptedException ex) {
                         ex.printStackTrace();
                     }
-                    logger.log(Level.INFO, "REPO SYNC TRIGGERED");
                     if(Synchro.getInstance().SIGNAL_SYNC_REPO == true){
+                        logger.log(Level.INFO, "REPO SYNC TRIGGERED");
                         Synchro.getInstance().syncRepo();
                     }else{
                         Synchro.getInstance().SIGNAL_SYNC_REPO = true;

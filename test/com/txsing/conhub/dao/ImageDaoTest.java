@@ -32,5 +32,6 @@ public class ImageDaoTest {
         Image newImage = new Image(jsonObject);
         
         System.out.println(newImage.getRepo());
+        System.err.println(newImage.getTag());
     }
 }

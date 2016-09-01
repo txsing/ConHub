@@ -159,12 +159,12 @@ public class Synchro {
 
     /**
      * *
-     * sync the whole Repo (default registry dockerhub) only called under the
+     * sync the whole Repo (default registry dockerhub). This method will only be called under the
      * case where docker pull a new image ("new" here in terms of new repo:tag
      * name while the imageid already exists).
      * e,g,. when you already have image "busybox:1.0" stored, then you pull "busybox:1.25".
-     * busybox:1.0 and busybox:1.25 actually refer to the same image (same content),
-     * so when you docker pull busybox:1.25, syncRepo will be triggered.
+     * while busybox:1.0 and busybox:1.25 actually refer to the same image (same content/id),
+     * in that case, syncRepo will be triggered.
      */
     public void syncRepo() {
         syncRepo(Constants.CONHUB_DEFAULT_REGISTRY);
@@ -195,6 +195,8 @@ public class Synchro {
 
                     for (Object tagkey : tagJSONObject.keySet()) {
                         String tag = (String) tagkey;
+                        if(tag.contains("@"))
+                            continue;
                         String tagAfterProcess
                                 = tag.substring(tag.indexOf(":") + 1);
 
