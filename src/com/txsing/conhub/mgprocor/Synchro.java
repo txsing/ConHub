@@ -23,23 +23,26 @@ import org.json.simple.JSONObject;
  */
 public class Synchro {
 
-    private List<List<String>> repoDBLst;
-
+    private final List<List<String>> repoDBLst;
     private static Synchro theOne;
-    protected boolean SIGNAL_SYNC_REPO = true;
+    protected boolean SIGNAL_SYNC_REPO;
 
     //constructor
-    private Synchro() {
+    private Synchro(){
         Connection conn = DBConnector.connectPostgres();
+        if(conn == null){
+            System.err.println("LOG(ERROR): failed to connect database.");
+            System.exit(0);
+        }
         this.repoDBLst = RepoTagDAO
                 .getRepoListFromDB(Constants.CONHUB_DEFAULT_REGISTRY, conn);
+        this.SIGNAL_SYNC_REPO = true;
     }
 
     public void syncAll() {
         syncImage();
         syncContainer();
     }
-
     
     /**
      * Sync all images in Docker Engine with Database.
@@ -65,7 +68,7 @@ public class Synchro {
                 imageDBLst.remove(imgId);
             }
         }
-        //imageDBLst.addAll(insertLst);
+        
         try {
             conn.close();
         } catch (SQLException ex) {
@@ -106,13 +109,12 @@ public class Synchro {
         List<String> conDBLst = ContainerDAO.getContainerLstFromDB(conn);
 
         List<String> conDKLst = ContainerDAO.getContainerLstFromDocker();
-
-        List<String> insertLst = new ArrayList<>();
+        //List<String> insertLst = new ArrayList<>();
 
         for (String conId : conDKLst) {
             if (conDBLst.contains(conId)) {
                 ContainerDAO.insertNewContainerIntoDB(conId, conn);
-                insertLst.add(conId);
+                //insertLst.add(conId);
             }
         }
 
@@ -122,7 +124,7 @@ public class Synchro {
                 conDBLst.remove(conId);
             }
         }
-        //conDBLst.addAll(insertLst);
+        
         try {
             conn.close();
         } catch (SQLException ex) {
@@ -158,13 +160,12 @@ public class Synchro {
 
 
     /**
-     * *
-     * sync the whole Repo (default registry dockerhub). This method will only be called under the
-     * case where docker pull a new image ("new" here in terms of new repo:tag
-     * name while the imageid already exists).
-     * e,g,. when you already have image "busybox:1.0" stored, then you pull "busybox:1.25".
-     * while busybox:1.0 and busybox:1.25 actually refer to the same image (same content/id),
-     * in that case, syncRepo will be triggered.
+     * sync the whole Repo (default registry dockerhub). 
+     * This method will only be called under the case where docker pull a new 
+     * image ("new" here means new repo:tag name while the imageid already exists).
+     * e,g,. when you already have image "busybox:1.0" stored, then you pull "busybox:1.25",
+     * however, busybox:1.0 and busybox:1.25 actually refer to the same image 
+     * (same content/id), in this case, syncRepo will be triggered.
      */
     public void syncRepo() {
         syncRepo(Constants.CONHUB_DEFAULT_REGISTRY);
@@ -179,7 +180,6 @@ public class Synchro {
 
             for (Object repokey : repoJSONObject.keySet()) {
                 String repoName = (String) repokey;
-
                 String repoFullString = regName + ":" + repoName;
 
                 //e,g,. Ubuntu:14.03, here Ubuntu is the repo name while 14.03 is tag.
@@ -242,24 +242,6 @@ public class Synchro {
         }
 
     }
-
-//    /**
-//     * *
-//     * the full length of imageid or conid is 64(long id). However "docker
-//     * ps/images" will only return the starting part of the id (short id).
-//     *
-//     * @param ids
-//     * @param longOrShortId
-//     * @return
-//     */
-//    private boolean imgConIDContains(List<String> ids, String longOrShortId) {
-//        for (String id : ids) {
-//            if (longOrShortId.startsWith(id) || id.startsWith(longOrShortId)) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
 
     public void repoDBLstAdd(String regColonRepo, String repoID) {
         this.repoDBLst.get(0).add(regColonRepo);

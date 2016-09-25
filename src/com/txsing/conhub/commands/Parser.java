@@ -23,21 +23,6 @@ public class Parser {
 	static String pattern_child = "(CHILD)(\\()(.{2})(\\))";
 	static String pattern_tag = "(TAG\\()(\\w+)(,\\s*)(select.*)";
 
-//	public static void main(String[] args) throws SQLException {
-//		String sql1 = "select * from image where imgid1 = INTERSECTION(12, 34) and imgid2 = INTERSECTION(13,14);";
-//		String sql2 = "select * from img where img.id IN CHILD(11) and img.id not in CHILD(09)";
-//		
-//		String sql4 = "select container.conid,image.imageid "
-//				+ "from container,image "
-//				+ "where image.imageid in "
-//				+ "CHILD(INTERSECTION(12,22)) "
-//				+ "and image.imageid=container.imageid";
-//		String sql3 = "TAG(test,"+sql4+")";
-//		Connection connection = DBConnector.connectPostgres(url, user, passwd);
-//		parseExecuteConSQL(connection, sql3);
-//		connection.close();
-//	}
-
 	public static void parseExecuteConSQL(Connection connection, String input) {
 		if (input.contains("INTERSECTION(")) {
 			input = parseIntersect(input);

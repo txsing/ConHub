@@ -7,6 +7,7 @@ package com.txsing.conhub.mgprocor;
 
 import java.util.*;
 import com.txsing.conhub.ult.*;
+import java.io.IOException;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,7 +50,7 @@ public class main {
             fileHandler.setLevel(Level.FINER);
 
             logger.addHandler(fileHandler);
-        } catch (Exception e) {
+        } catch (IOException | SecurityException e) {
             e.printStackTrace();
         }
     }
@@ -70,7 +71,7 @@ public class main {
                     = new DockerFileWatcher(Constants.DOCKER_PATH_REPOSITORY, "repo", false);
             repoWatcher.start();
         } catch (Exception e) {
-            System.err.println("Failed to start monitor service!");
+            System.err.println("LOG(ERROR): failed to start monitor service!");
             System.err.println(e.getMessage());
         }
     }

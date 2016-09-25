@@ -48,8 +48,7 @@ public class APIs {
     }
 
     public static List<String> getParentalImageIDsList(String imageID, Connection conn) throws Exception {
-        String fullImageID = null;
-        fullImageID = Helper.getFullID(imageID, ImageDAO.getImageLstFromDocker());
+        String fullImageID = Helper.getFullID(imageID, ImageDAO.getImageLstFromDocker());
 
         List<String> parentIDLst = new ArrayList<String>();
         String sql = "WITH RECURSIVE parents(id, visited) AS("
@@ -75,10 +74,10 @@ public class APIs {
     }
 
     public static List<String> getChildImgList(String imageID, Connection conn) throws Exception {
-        String fullImageID = null;
+        String fullImageID;
         fullImageID = Helper.getFullID(imageID, ImageDAO.getImageLstFromDocker());
 
-        List<String> childsIDLst = new ArrayList<String>();
+        List<String> childsIDLst = new ArrayList<>();
         String sql = "WITH RECURSIVE childs(id, visited) AS("
                 + " SELECT layerid, ARRAY[]::varchar[] FROM layers WHERE parent = '" + fullImageID + "'"
                 + " UNION"
