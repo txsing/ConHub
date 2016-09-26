@@ -137,9 +137,15 @@ public class DockerFileWatcher extends Thread {
                         writeLock.unlock();
                     }
 
-                    Synchro.syncImamge(child.toString()
-                            .substring(Constants.DOCKER_PATH_IMAGE.length()),
-                            event.kind().name());
+                    try {
+                        Synchro.syncImamge(child.toString()
+                                .substring(Constants.DOCKER_PATH_IMAGE.length()),
+                                event.kind().name());
+                    } catch (Exception e) {
+                        System.err.println(e.getMessage());
+                        System.err.println("LOG(ERROR): Failed to sync image");
+                    }
+
                 } else if (type.equals("repo")
                         && child.toString().endsWith("repositories.json")) {
                     try {
@@ -147,18 +153,30 @@ public class DockerFileWatcher extends Thread {
                     } catch (InterruptedException ex) {
                         ex.printStackTrace();
                     }
-                    if(Synchro.getInstance().SIGNAL_SYNC_REPO == true){
+                    if (Synchro.getInstance().SIGNAL_SYNC_REPO == true) {
                         logger.log(Level.INFO, "REPO SYNC TRIGGERED");
-                        Synchro.getInstance().syncRepo();
-                    }else{
+                        try {
+                            Synchro.getInstance().syncRepo();
+                        } catch (Exception e) {
+                            System.err.println(e.getMessage());
+                            System.err.println("LOG(ERROR): Failed to sync whole repo");
+                        }
+
+                    } else {
                         Synchro.getInstance().SIGNAL_SYNC_REPO = true;
                     }
                 } else if (type.equals("container")
                         && !event.kind().name().equals("ENTRY_MODIFY")) {
                     logger.log(Level.INFO, "CONTAINER SYNC TRIGGERED");
-                    Synchro.syncContainer(child.toString()
-                            .substring(Constants.DOCKER_PATH_CONTAINER.length()),
-                            event.kind().name());
+                    try {
+                        Synchro.syncContainer(child.toString()
+                                .substring(Constants.DOCKER_PATH_CONTAINER.length()),
+                                event.kind().name());
+                    } catch (Exception e) {
+                        System.err.println(e.getMessage());
+                        System.err.println("LOG(ERROR): Failed to sync container");
+                    }
+
                 }
                 // if directory is created, and watching recursively, then
                 // register it and its sub-directories

@@ -16,14 +16,13 @@ import com.txsing.conhub.ult.*;
 public class Parser {
 
     public static String parseCQL(Connection connection, String input) {
+        input = input.toLowerCase();
         if (input.contains("intersection(")) {
-            input = parseIntersect(input);
-            //System.out.println(input);
+            input = parseIntersect(connection, input);
         }
         
         if (input.contains("child(")) {
             input = parseChild(connection, input);
-            //System.out.println(input);
         }
         
         // parse and execute conSQL starting with TAG function
@@ -32,17 +31,6 @@ public class Parser {
         }else{ // execute regular SQL (after parsed from ConSQL)
             return input;
         }
-    }
-
-    public static ResultSet executeSQL(Connection connection, String sql) {
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet rs = statement.executeQuery(sql);
-            return rs;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public static String parseExecuteTag(Connection connection, String input) {
@@ -71,17 +59,19 @@ public class Parser {
 
     }
 
-    public static String parseIntersect(String input) {
+    public static String parseIntersect(Connection conn, String input) {
         Pattern interp = Pattern.compile(Constants.PATTERN_INTERSECT);
         Matcher matcher = interp.matcher(input);
         String result = input;
         String id1, id2 = null;
+        
         try {
             while (matcher.find()) {
-                // System.out.println(matcher.group(0));
-                id1 = matcher.group(3);
-                id2 = matcher.group(5);
-                result = result.replace(matcher.group(), "'" + APIs.getIntersection(id1, id2)) + "'";
+                //System.out.println("LOG(DEBUG): intersect pattern found");
+                id1 = matcher.group(4);
+                id2 = matcher.group(8);
+                result = result.replace(matcher.group(), "'" 
+                        + APIs.getImageIntersection(id1, id2, conn)+ "'");
             }
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -98,17 +88,27 @@ public class Parser {
         while (matcher.find()) {
             try {
                 count++;
-                String id = matcher.group(3);
+                //the input can be "child('abc') or child(abc)"
+                String id = matcher.group(3); //abc
+                
+                //System.out.println(id);
+                if(id.equals("'")) //'abc'
+                    id = matcher.group(4);
+                //System.out.println(id);
+                
                 String childIds[] = APIs.getChildImgList(id, conn).toArray(new String[0]);
                 Statement statement = conn.createStatement();
+                
                 // create temporary table to store ids of the child images
                 String tempTableSQL = "create temp table tempimglst" + count + "(ids varchar(64))";
                 statement.execute(tempTableSQL);
+                
                 // insert data into the temp table
                 for (int i = 0; i < childIds.length; i++) {
                     String insertSQL = "insert into tempimglst" + count + " values('" + childIds[i] + "')";
                     statement.execute(insertSQL);
                 }
+                
                 result = result.replace(matcher.group(), "(select * from tempimglst" + count + ")");
                 statement.close();
             } catch (Exception e) {

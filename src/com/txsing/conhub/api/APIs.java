@@ -5,9 +5,12 @@
  */
 package com.txsing.conhub.api;
 
+import com.txsing.conhub.exceptions.IDNotFoundException;
 import java.sql.*;
+import com.txsing.conhub.exceptions.*;
 import com.txsing.conhub.ult.*;
 import com.txsing.conhub.dao.*;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -16,15 +19,12 @@ import java.util.*;
  */
 public class APIs {
 
-    public static String getParentalImageID(String imageID,
-            Connection conn) throws Exception {
+    public static String getParentalImageID(String imageID, Connection conn)
+            throws IDNotFoundException, SQLException, IOException {
 
-        String fullImageID = null;
-        fullImageID = Helper.getFullID(imageID, ImageDAO.getImageLstFromDocker());
+        String parentalImgID = null;
 
-        if (fullImageID == null) {
-            return null;
-        }
+        String fullImageID = Helper.getFullID(imageID, ImageDAO.getImageLstFromDocker());
 
         String sql = "WITH RECURSIVE parents(id, visited) AS("
                 + " SELECT parent, ARRAY[]::varchar[] FROM layers WHERE layerid = '" + fullImageID + "'"
@@ -33,24 +33,26 @@ public class APIs {
                 + " AND parents.id NOT IN (SELECT imageid FROM images)"
                 + " AND NOT parents.id = ANY(visited))"
                 + " SELECT imageid FROM parents, images WHERE images.imageid = parents.id;";
+
         try {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             if (rs.next()) {
-                String parentalImgID = rs.getString(1);
-                return parentalImgID;
+                parentalImgID = rs.getString(1);
             }
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("LOG(DEBUG): Possible problematic SQL(gPaImg): \n    " + sql);
+            throw e;
         }
-
-        return null;
+        return parentalImgID;
     }
 
-    public static List<String> getParentalImageIDsList(String imageID, Connection conn) throws Exception {
-        String fullImageID = Helper.getFullID(imageID, ImageDAO.getImageLstFromDocker());
+    public static List<String> getParentalImageIDsList(String imageID, Connection conn)
+            throws IDNotFoundException, SQLException, IOException {
 
-        List<String> parentIDLst = new ArrayList<String>();
+        String fullImageID = Helper.getFullID(imageID, ImageDAO.getImageLstFromDocker());
+        List<String> parentIDLst = new ArrayList<>();
+
         String sql = "WITH RECURSIVE parents(id, visited) AS("
                 + " SELECT parent, ARRAY[]::varchar[] FROM layers WHERE layerid = '" + fullImageID + "'"
                 + " UNION"
@@ -65,41 +67,41 @@ public class APIs {
                 String parentalImgID = rs.getString(1);
                 parentIDLst.add(parentalImgID);
             }
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return null;
+        } catch (SQLException e) {
+            System.err.println("LOG(DEBUG): Possible problematic SQL(gPImgL): \n    " + sql);
+            throw e;
         }
 
         return parentIDLst;
     }
 
-    public static List<String> getChildImgList(String imageID, Connection conn) throws Exception {
-        String fullImageID;
-        fullImageID = Helper.getFullID(imageID, ImageDAO.getImageLstFromDocker());
-
+    public static List<String> getChildImgList(String imageID, Connection conn) 
+            throws IDNotFoundException, SQLException, IOException {
         List<String> childsIDLst = new ArrayList<>();
-        String sql = "WITH RECURSIVE childs(id, visited) AS("
-                + " SELECT layerid, ARRAY[]::varchar[] FROM layers WHERE parent = '" + fullImageID + "'"
-                + " UNION"
-                + " SELECT layers.layerid, (visited || childs.id) FROM childs, layers WHERE layers.parent = childs.id"
-                + " AND NOT childs.id = ANY(visited))"
-                + " SELECT imageid FROM childs, images WHERE images.imageid = childs.id;";
-
+        String fullImageID = Helper.getFullID(imageID, ImageDAO.getImageLstFromDocker());
+        
         try {
+            String sql = "WITH RECURSIVE childs(id, visited) AS("
+                    + " SELECT layerid, ARRAY[]::varchar[] FROM layers WHERE parent = '" + fullImageID + "'"
+                    + " UNION"
+                    + " SELECT layers.layerid, (visited || childs.id) FROM childs, layers WHERE layers.parent = childs.id"
+                    + " AND NOT childs.id = ANY(visited))"
+                    + " SELECT imageid FROM childs, images WHERE images.imageid = childs.id;";
+
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 String parentalImgID = rs.getString(1);
                 childsIDLst.add(parentalImgID);
             }
-        } catch (Exception e) {
+        } catch (SQLException e){
             System.err.println(e.getMessage());
-            return null;
         }
         return childsIDLst;
     }
 
-    public static String getIntersection(String imageID1, String imageID2) throws Exception {
+    public static String getLayerIntersection(String imageID1, String imageID2)
+            throws IDNotFoundException, IOException {
         String fullid1 = Helper.getFullID(imageID1, ImageDAO.getImageLstFromDocker());
         String fullid2 = Helper.getFullID(imageID2, ImageDAO.getImageLstFromDocker());
 
@@ -113,8 +115,21 @@ public class APIs {
         }
         return null;
     }
-    
-    public static boolean tag(String[] idList, String label){
+
+    public static String getImageIntersection(String imageID1, String imageID2, Connection conn)
+            throws IDNotFoundException, SQLException, IOException {
+        List<String> imageLst1 = APIs.getParentalImageIDsList(imageID1, conn);
+        List<String> imageLst2 = APIs.getParentalImageIDsList(imageID2, conn);
+
+        for (String id : imageLst1) {
+            if (imageLst2.contains(id)) {
+                return id;
+            }
+        }
+        return null;
+    }
+
+    public static boolean tag(String[] idList, String label) {
         return false;
     }
 }

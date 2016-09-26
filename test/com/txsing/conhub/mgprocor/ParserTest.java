@@ -16,24 +16,22 @@ import java.sql.Statement;
  */
 public class ParserTest {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
 //        parseChildTest("select reponame, tag from repositories, tags, images "
 //                + "where images.imageid IN child(42118e3) "
 //                + "AND tags.imageid = images.imageid AND tags.repoid = repositories.repoid");
         Connection conn = DBConnector.connectPostgres();
-        String output = Parser.parseCQL(conn, "select I.imageid from Images I where I.imageid in child(intersection(ef5b,7dbdd))");
-        System.err.println(output);
+        String sql1 = "select R.reponame, T.tag "
+                + "from Images I, Tags T, Repositories R "
+                + "where I.imageid in CHILD(INTERSECTION('f41a','fef5')) "
+                + "and I.imageid = T.imageid "
+                + "and T.repoid = R.repoid";
+        
+        String sql2 = Parser.parseIntersect(conn, sql1.toLowerCase());
+        parseChildTest(sql2);
 
     }
-
-    static void parseIntesectionTest(String sql){
-        try {
-            String newSQL = Parser.parseIntersect(sql);
-            System.out.println(newSQL);        
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-        }       
-    }
+    
     static void parseChildTest(String sql) {
         try {
             Connection conn = DBConnector.connectPostgres();
@@ -42,7 +40,7 @@ public class ParserTest {
             System.out.println(newSQL);
             ResultSet rs = stmt.executeQuery(newSQL);
             while (rs.next()) {
-                System.out.println(rs.getString(1));
+                System.out.println(rs.getString(1)+":"+rs.getString(2));
             }
             rs.close();
             stmt.close();

@@ -7,6 +7,7 @@ package com.txsing.conhub.dao;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ import java.util.List;
  */
 public class RepoTagDAO {
 
-    public static List<String> getImageTagListFromDB(String repoid, Connection conn) {
+    public static List<String> getImageTagListFromDB(String repoid, Connection conn) throws SQLException{
         String sql = "SELECT tag FROM tags WHERE repoid = '" + repoid + "'";
         try {
             List<String> resultLst = new ArrayList<>();
@@ -31,15 +32,15 @@ public class RepoTagDAO {
             stmt.close();
             rs.close();
             return resultLst;
-        } catch (Exception e) {
-            System.err.println("Get Tag SQL: " + sql);
-            System.err.println(e.getMessage());
-            return null;
+        } catch (SQLException e) {
+            System.err.println("LOG(DEBUG): Possible problematic SQL(gTfDB): \n    " + sql);
+            //System.err.println(e.getMessage());
+            throw e;
         }
     }
 
     public static List<List<String>> getRepoListFromDB(String registryName
-            , Connection conn) {
+            , Connection conn) throws SQLException{
         String getRepoSQL = getRepoSQL = "SELECT repoid, reponame, regname"
                 + " FROM repositories WHERE"
                 + " regname = '" + registryName + "'";
@@ -60,10 +61,10 @@ public class RepoTagDAO {
             stmt.close();
             repoRs.close();
             return result;
-        } catch (Exception e) {
-            System.err.println("Get Repo SQL: " + getRepoSQL);
-            System.err.println(e.getMessage());
-            return null;
+        } catch (SQLException e) {
+            System.err.println("LOG(DEBUG): Possible problematic SQL(gRPfDB): \n    " + getRepoSQL);
+            //System.err.println(e.getMessage());
+            throw e;
         }
     }
 
@@ -73,9 +74,10 @@ public class RepoTagDAO {
      * @param repoName
      * @param regName
      * @return the id of the inserted repo.
+     * @throws java.lang.Exception
      */
     public static String insertNewRepoIntoDB(Connection conn, String repoName
-            , String regName) {
+            , String regName) throws SQLException{
         String sql = null;
         try {
             SimpleDateFormat formater = new SimpleDateFormat("YYMMddHHmmssS");
@@ -87,15 +89,15 @@ public class RepoTagDAO {
             stmt.executeUpdate(sql);
             stmt.close();
             return repoID;
-        } catch (Exception e) {
-            System.err.println("INSERT REPO: " + sql);
-            System.err.println(e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("LOG(DEBUG): Possible problematic SQL(InsRP): \n    " + sql);
+            //System.err.println(e.getMessage());
+            throw e;
         }
-        return null;
     }
     
     public static boolean insertNewTagIntoDB(Connection conn, String tag
-            , String imageID, String repoID) {
+            , String imageID, String repoID) throws SQLException{
         String sql = "INSERT INTO tags VALUES('" + tag + "', '" + imageID
                 + "', '" + repoID + "')";
         try {
@@ -103,14 +105,14 @@ public class RepoTagDAO {
             stmt.executeUpdate(sql);
             stmt.close();
             return true;
-        } catch (Exception e) {
-            System.err.println("INSERT TAG: " + sql);
-            System.err.println(e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("LOG(DEBUG): Possible problematic SQL(InsTag): \n    " + sql);
+            //System.err.println(e.getMessage());
+            throw e;
         }
-        return false;
     }
     
-    public static String getRepoID(Connection conn, String regName, String repoName){
+    public static String getRepoID(Connection conn, String regName, String repoName) throws SQLException{
         String sql = "SELECT repoid FROM repositories WHERE reponame = '"
                 + repoName + "' AND regname = '"
                 + regName+"'";
@@ -122,8 +124,9 @@ public class RepoTagDAO {
                 repoID = repoRs.getString(1);
             }
         } catch(Exception e){
-            System.err.println("GET REPO ID: "+sql);
-            System.err.println(e.getMessage());
+            System.err.println("LOG(DEBUG): Possible problematic SQL(gRPID): \n    "+sql);
+            //System.err.println(e.getMessage());
+            throw e;
         }
         return repoID;
     }

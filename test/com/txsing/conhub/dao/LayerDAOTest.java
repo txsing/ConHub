@@ -5,6 +5,7 @@
  */
 package com.txsing.conhub.dao;
 
+import com.txsing.conhub.ult.DBConnector;
 import java.util.List;
 
 /**
@@ -12,11 +13,11 @@ import java.util.List;
  * @author txsing
  */
 public class LayerDAOTest {
-    public static void main(String[] args){
-        List<String> layerLST = LayerDAO.getLayerIDList("f2c");
+    public static void main(String[] args) throws Exception{
+        List<String> layerLST = LayerDAO.getLayerIDList("9e154");
         for(String layer : layerLST){
             System.out.println(layer);
         }
-        //LayerDAO.insertLayersIntoDB(layerLST);
+        LayerDAO.insertLayersIntoDB(layerLST, DBConnector.connectPostgres());
     }
 }

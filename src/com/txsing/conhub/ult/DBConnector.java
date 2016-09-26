@@ -9,29 +9,32 @@ package com.txsing.conhub.ult;
  *
  * @author txsing
  */
+import com.txsing.conhub.exceptions.DBConnectException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class DBConnector {
 
-    public static Connection connectPostgres(String url, String user, String passwd) throws Exception {
-        Class.forName(Constants.DB_POSTGRES_DRIVER).newInstance();
-        Connection conn = DriverManager.getConnection(url, user, passwd);
+    public static Connection connectPostgres(String url, String user, String passwd) 
+            throws DBConnectException {
+        Connection conn;
+        try{
+            Class.forName(Constants.DB_POSTGRES_DRIVER).newInstance();
+            conn = DriverManager.getConnection(url, user, passwd);
+        }catch(Exception e){
+            throw new DBConnectException("LOG(DEBUG): "+e.getMessage());
+        }
         return conn;
     }
 
     //default
-    public static Connection connectPostgres() {
+    public static Connection connectPostgres() throws DBConnectException {
         Connection conn = null;
-        try {
-            conn = connectPostgres(
-                    Constants.DB_POSTGRES_URL,
-                    Constants.DB_POSTGRES_USER,
-                    Constants.DB_POSTGRES_PASSWORD);
-
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-        }
+        conn = connectPostgres(
+                Constants.DB_POSTGRES_URL,
+                Constants.DB_POSTGRES_USER,
+                Constants.DB_POSTGRES_PASSWORD);
         return conn;
     }
 }

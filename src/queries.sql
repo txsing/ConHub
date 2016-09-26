@@ -1,7 +1,8 @@
+/*find parent image*/
 WITH RECURSIVE parents(id, visited) AS(
 	SELECT parent, 
                ARRAY[]::varchar[]
-        FROM layers WHERE layerid = '5'
+        FROM layers WHERE layerid = 'f41a012660371df2ff6fe7358225c94a5ab0522f556915b930c725b8567cef22'
 	UNION
 	SELECT layers.parent, 
                (visited || parents.id)
@@ -10,10 +11,11 @@ WITH RECURSIVE parents(id, visited) AS(
         AND NOT parents.id = ANY(visited)
 ) SELECT imageid FROM parents, images WHERE images.imageid = parents.id;
 
+/*find all parental image*/
 WITH RECURSIVE parents(id, visited) AS(
 	SELECT parent, 
                ARRAY[]::varchar[]
-        FROM layers WHERE layerid = '5'
+        FROM layers WHERE layerid = 'f41a012660371df2ff6fe7358225c94a5ab0522f556915b930c725b8567cef22'
 	UNION
 	SELECT layers.parent, 
                (visited || parents.id)
@@ -55,3 +57,4 @@ Insert into images values('3');
 Insert into images values('5');
 
 select I.imageid from Images I where I.imageid in CHILD(INTERSECTION(ef5b,7dbdd))
+select R.reponame, T.tag from Images I, Tags T, Repositories R where I.imageid in CHILD(INTERSECTION('f41a','fef5')) and I.imageid = T.imageid and T.repoid = R.repoid

@@ -14,6 +14,9 @@ import java.util.Set;
  * @author txsing
  */
 public class Constants {
+    //separator
+    public static final String CONHUB_RES_SEPARATOR = "---------";
+    
     //ConHub default parameters
     public static final String CONHUB_DEFAULT_REGISTRY = "dockerhub";
     //DB parameters
@@ -32,7 +35,7 @@ public class Constants {
     //Parser Strings
     public static final String PATTERN_INTERSECT = "(intersection)"
             + "(\\()(')(.{1,64})(')(,\\s*)(')([^\\)]{1,64})(')(\\))"; //INTERSECTION('arg1', 'arg2')
-    public static final String PATTERN_CHILD = "(child)(\\()(.{1,64})(\\))"; //CHILD(arg)
+    public static final String PATTERN_CHILD = "(child)(\\()(')?(.{1,64})(')?(\\))"; //CHILD(arg)
     public static final String PATTERN_TAG = "(tag\\()([\\w]+)(,\\s*)(select.*)"; //TAG(label, sql)
     public static final String PATTERN_DIS = "(distance\\()([\\w]+)(,\\s*)([\\w]+)(\\))";
     

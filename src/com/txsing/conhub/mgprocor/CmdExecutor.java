@@ -5,6 +5,7 @@
  */
 package com.txsing.conhub.mgprocor;
 
+import com.txsing.conhub.exceptions.DBConnectException;
 import com.txsing.conhub.ult.*;
 import java.io.*;
 import java.sql.*;
@@ -26,7 +27,9 @@ public class CmdExecutor {
         } else if (cmd.toLowerCase().startsWith("select")) {
             return sendCmdToDB(cmd);
         } else {
-            System.err.println("Unsupported Commands");
+            System.err.println("LOG(ERROR): Unsupported Commands");
+            List<String> result = new ArrayList<>();
+            result.add(Constants.CONHUB_RES_SEPARATOR);
             return null;
         }
     }
@@ -37,10 +40,7 @@ public class CmdExecutor {
     public static List<String> sendCmdToDB(String cmd) {
         List<String> result = null;
         try {
-            Connection conn = DBConnector.connectPostgres(
-                    Constants.DB_POSTGRES_URL,
-                    Constants.DB_POSTGRES_USER,
-                    Constants.DB_POSTGRES_PASSWORD);
+            Connection conn = DBConnector.connectPostgres();
             cmd = Parser.parseCQL(conn, cmd);
             if(!cmd.startsWith("TAG: ")){
                 result = executeSQL(conn, cmd);
@@ -49,15 +49,18 @@ public class CmdExecutor {
                 result.add(cmd);
             }            
             conn.close();
-        } catch (Exception e) {
+        } catch (SQLException e) {
+            System.err.println("LOG(ERROR): failed to execute CQL");
+            System.err.println(e.getMessage());
+        } catch (DBConnectException e){
+            System.err.println("LOG(ERROR): failed to connect DB");
             System.err.println(e.getMessage());
         }
         return result;
     }
 
-    public static List<String> executeSQL(Connection conn, String sql) {
+    public static List<String> executeSQL(Connection conn, String sql) throws SQLException{
         List<String> resultStringList = new ArrayList<>();
-        try {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
 
@@ -79,12 +82,7 @@ public class CmdExecutor {
                 }
                 resultStringList.add(line);
             }
-            
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return resultStringList;
-        }
-        resultStringList.add("------");
+        resultStringList.add(Constants.CONHUB_RES_SEPARATOR);
         return resultStringList;
     }
 

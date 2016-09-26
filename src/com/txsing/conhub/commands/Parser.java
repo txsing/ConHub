@@ -15,14 +15,6 @@ import com.txsing.conhub.ult.*;
  * @author txsing
  */
 public class Parser {
-	static String user = "postgres";
-	static String passwd = "scse";
-	static String url = "jdbc:postgresql://localhost/test";
-
-	static String pattern_inter = "(INTERSECTION\\()([\\w]+)(,\\s*)([\\w]+)(\\))";
-	static String pattern_child = "(CHILD)(\\()(.{2})(\\))";
-	static String pattern_tag = "(TAG\\()(\\w+)(,\\s*)(select.*)";
-
 	public static void parseExecuteConSQL(Connection connection, String input) {
 		if (input.contains("INTERSECTION(")) {
 			input = parseIntersect(input);

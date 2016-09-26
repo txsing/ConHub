@@ -15,29 +15,37 @@ import java.util.*;
  */
 public class APIsTest {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         Connection conn = DBConnector.connectPostgres();
-        String result = getIntersectionTest("ef5b", "7dbd");
+        String result = getImageIntersectionTest("fef5", "f41a", conn);
+        conn.close();
         System.err.println(result);
     }
-    
-    static String getParentalImageIDTest(String shortID, Connection conn){
-        try{
-           return APIs.getParentalImageID(shortID, conn);
-        }catch(Exception e){
+
+    static String getParentalImageIDTest(String shortID, Connection conn) {
+        try {
+            return APIs.getParentalImageID(shortID, conn);
+        } catch (Exception e) {
             System.err.println(e.getMessage());
             return null;
         }
     }
     
-        static String getIntersectionTest(String id1, String id2){
-        try{
-           return APIs.getIntersection(id1, id2);
-        }catch(Exception e){
+    static String getImageIntersectionTest(String id1, String id2, Connection conn) {
+        try {
+            return APIs.getImageIntersection(id1, id2, conn);
+        } catch (Exception e) {
             System.err.println(e.getMessage());
             return null;
         }
     }
     
+    static List<String> getChildImgListTest(String id, Connection conn){
+        try {
+            return APIs.getChildImgList(id, conn);
+        } catch (Exception e) {
+        }
+        return null;
+    }
 
 }
