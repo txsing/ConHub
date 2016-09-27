@@ -57,4 +57,5 @@ Insert into images values('3');
 Insert into images values('5');
 
 select I.imageid from Images I where I.imageid in CHILD(INTERSECTION(ef5b,7dbdd))
-select R.reponame, T.tag from Images I, Tags T, Repositories R where I.imageid in CHILD(INTERSECTION('f41a','fef5')) and I.imageid = T.imageid and T.repoid = R.repoid
+
+select R.reponame, T.tag from Images I, Tags T, Repositories R where I.imageid in CHILD(INTERSECTION('f42a','fef5')) and I.imageid = T.imageid and T.repoid = R.repoid

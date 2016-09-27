@@ -86,9 +86,7 @@ public class DockerFileWatcher extends Thread {
      * Process all events for keys queued to the watcher
      */
     void processEvents() {
-        Logger logger = Logger.getLogger("com.txsing.conhub.mgprocor");
-        logger.log(Level.INFO, "DIR: {0} MONITORED", dir);
-
+        System.out.printf("LOG(INFO): DIR \"%s\" MONITORED\n", dir);
         for (;;) {
             // wait for key to be signalled
             WatchKey key;
@@ -120,8 +118,7 @@ public class DockerFileWatcher extends Thread {
                 //event detected
                 //System.out.format("%s: %s\n", event.kind().name(), child);
                 if (type.equals("image") && !child.toString().endsWith("tmp")) {
-                    logger.log(Level.INFO, "IMAGE SYNC TRIGGERED");
-
+                    System.out.println("LOG(INFO): IMAGE SYNC TRIGGERED");
                     //docker pull a new image of which the image id is new, then
                     //signal is set to false, cos the repo of that image will be
                     //synced along with the image itself.
@@ -154,7 +151,7 @@ public class DockerFileWatcher extends Thread {
                         ex.printStackTrace();
                     }
                     if (Synchro.getInstance().SIGNAL_SYNC_REPO == true) {
-                        logger.log(Level.INFO, "REPO SYNC TRIGGERED");
+                        System.out.println("LOG(INFO): WHOLE REPO SYNC TRIGGERED");
                         try {
                             Synchro.getInstance().syncRepo();
                         } catch (Exception e) {
@@ -167,7 +164,7 @@ public class DockerFileWatcher extends Thread {
                     }
                 } else if (type.equals("container")
                         && !event.kind().name().equals("ENTRY_MODIFY")) {
-                    logger.log(Level.INFO, "CONTAINER SYNC TRIGGERED");
+                    System.out.println("LOG(INFO): CONTAINER SYNC TRIGGERED");
                     try {
                         Synchro.syncContainer(child.toString()
                                 .substring(Constants.DOCKER_PATH_CONTAINER.length()),

@@ -7,10 +7,6 @@ package com.txsing.conhub.mgprocor;
 
 import java.util.*;
 import com.txsing.conhub.ult.*;
-import java.io.IOException;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -40,20 +36,20 @@ public class main {
     public static void initSystem() {
         Synchro.getInstance().syncAll();
         startFileWatchService();
-        setLogger();
+//        setLogger();
     }
 
-    public static void setLogger() {
-        try {
-            Logger logger = Logger.getLogger("com.txsing.conhub.mgprocor");
-            FileHandler fileHandler = new FileHandler("mgprocor.log");
-            fileHandler.setLevel(Level.FINER);
-
-            logger.addHandler(fileHandler);
-        } catch (IOException | SecurityException e) {
-            e.printStackTrace();
-        }
-    }
+//    public static void setLogger() {
+//        try {
+//            Logger logger = Logger.getLogger("com.txsing.conhub.mgprocor");
+//            FileHandler fileHandler = new FileHandler("mgprocor.log");
+//            fileHandler.setLevel(Level.FINER);
+//
+//            logger.addHandler(fileHandler);
+//        } catch (IOException | SecurityException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public static void startFileWatchService() {
         try {

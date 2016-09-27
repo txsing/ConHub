@@ -6,6 +6,7 @@
 package com.txsing.conhub.mgprocor;
 
 import com.txsing.conhub.exceptions.DBConnectException;
+import com.txsing.conhub.exceptions.IDNotFoundException;
 import com.txsing.conhub.ult.*;
 import java.io.*;
 import java.sql.*;
@@ -26,7 +27,10 @@ public class CmdExecutor {
             return sendCmdToDocker(cmd);
         } else if (cmd.toLowerCase().startsWith("select")) {
             return sendCmdToDB(cmd);
-        } else {
+        }else if(cmd.matches("\\s+")){
+            return null;
+        } 
+        else {
             System.err.println("LOG(ERROR): Unsupported Commands");
             List<String> result = new ArrayList<>();
             result.add(Constants.CONHUB_RES_SEPARATOR);
@@ -49,12 +53,15 @@ public class CmdExecutor {
                 result.add(cmd);
             }            
             conn.close();
-        } catch (SQLException e) {
+        } catch (IDNotFoundException e) {
+            System.err.println(e.getMessage());
             System.err.println("LOG(ERROR): failed to execute CQL");
-            System.err.println(e.getMessage());
         } catch (DBConnectException e){
-            System.err.println("LOG(ERROR): failed to connect DB");
             System.err.println(e.getMessage());
+            System.err.println("LOG(ERROR): failed to connect DB");
+        } catch (Exception e){
+            System.err.println(e.getMessage());
+            System.err.println("LOG(ERROR): failed to execute CQL");
         }
         return result;
     }
@@ -116,9 +123,8 @@ public class CmdExecutor {
 
             BufferedReader reader
                     = new BufferedReader(new InputStreamReader(is));
-//
-            String line;
-            
+
+            String line;            
             while ((line = reader.readLine()) != null) {
                 os.write((line+"\n").getBytes());
                 os.flush();

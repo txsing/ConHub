@@ -33,7 +33,7 @@ public class Helper {
             if(fullIDLst.contains(shortID))
                 return shortID;
             else{
-                throw new IDNotFoundException("(ERROR): '"+shortID+"' NO MATCH FOUND");
+                throw new IDNotFoundException("'"+shortID+"' NO MATCH FOUND");
             }
         }
         boolean firstOccur = false;
@@ -45,12 +45,12 @@ public class Helper {
                     result = fullid;
                 }
                 else{
-                    throw new IDNotFoundException("(ERROR): AMBIGUOUS ID: "+shortID);
+                    throw new IDNotFoundException("AMBIGUOUS ID: "+shortID);
                 }
             }
         }
         if(!firstOccur){
-            throw new IDNotFoundException("(ERROR): ID '"+shortID+"' NO MATCH FOUND");
+            throw new IDNotFoundException("ID '"+shortID+"' NO MATCH FOUND");
         }
         return result;
     }
