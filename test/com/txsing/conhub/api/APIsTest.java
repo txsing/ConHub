@@ -17,9 +17,17 @@ public class APIsTest {
 
     public static void main(String[] args) throws Exception {
         Connection conn = DBConnector.connectPostgres();
-        String result = getImageIntersectionTest("fef5", "f41a", conn);
+        
+        //Parental List
+        
+        List<String> result = getParentalImgListTest("f41a",conn);
+        for(String id : result)
+            System.out.println(id);
+        //Intersection
+//      String result = getImageIntersectionTest("fef5", "f41a", conn);
+//      System.err.println(result);
         conn.close();
-        System.err.println(result);
+        
     }
 
     static String getParentalImageIDTest(String shortID, Connection conn) {
@@ -46,6 +54,15 @@ public class APIsTest {
         } catch (Exception e) {
         }
         return null;
+    }
+    
+    static List<String> getParentalImgListTest(String id, Connection conn){
+        try {
+            return APIs.getParentalImageIDsList(id, conn);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return null;
+        }
     }
 
 }

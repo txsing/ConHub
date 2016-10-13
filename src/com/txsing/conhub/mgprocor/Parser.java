@@ -36,26 +36,28 @@ public class Parser {
         }
     }
 
-    public static String parseExecuteTag(Connection connection, String input) {
-        Pattern tagp = Pattern.compile(Constants.API_TAG);
+    public static String parseExecuteTag(Connection conn, String input) {
+        Pattern tagp = Pattern.compile(Constants.PATTERN_TAG);
         Matcher matcher = tagp.matcher(input);
         String label = "";
         if (matcher.find()) {
-            String sql = matcher.group(4);
+            String sql = matcher.group(6);
+            //System.err.println("LOG(DEBUG): "+sql);
             sql = sql.substring(0, sql.length() - 1);
-            label = matcher.group(2);
+            label = matcher.group(3);
 
             try {
-                Statement statement = connection.createStatement();
+                Statement statement = conn.createStatement();
                 ResultSet rs = statement.executeQuery(sql);
                 List<String> ids = new ArrayList<>();
                 while (rs.next()) {
                     ids.add(rs.getString(1));
                 }
 
-                APIs.tag(ids.toArray(new String[ids.size()]), label);
-            } catch (Exception e) {
+                APIs.tag(ids.toArray(new String[ids.size()]), label, conn);
+            } catch (SQLException e) {
                 System.err.println(e.getMessage());
+                e.printStackTrace();
             }
         }
         return "TAG: " + label;

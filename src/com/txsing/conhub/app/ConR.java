@@ -3,15 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.txsing.conhub.exceptions;
+package com.txsing.conhub.app;
 
 /**
  *
  * @author txsing
  */
-public class DBConnectException extends Exception {
-
-    public DBConnectException(String msg) {
-        super(msg);
-    }
+public class ConR {
+    
+    
 }

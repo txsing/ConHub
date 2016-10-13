@@ -74,27 +74,26 @@ public class APIs {
         return parentIDLst;
     }
 
-    public static List<String> getChildImgList(String imageID, Connection conn) 
+    public static List<String> getChildImgList(String imageID, Connection conn)
             throws IDNotFoundException, SQLException, IOException {
         List<String> childsIDLst = new ArrayList<>();
         String fullImageID = Helper.getFullID(imageID, ImageDAO.getImageLstFromDocker());
-        
+        String sql = "WITH RECURSIVE childs(id, visited) AS("
+                + " SELECT layerid, ARRAY[]::varchar[] FROM layers WHERE parent = '" + fullImageID + "'"
+                + " UNION"
+                + " SELECT layers.layerid, (visited || childs.id) FROM childs, layers WHERE layers.parent = childs.id"
+                + " AND NOT childs.id = ANY(visited))"
+                + " SELECT imageid FROM childs, images WHERE images.imageid = childs.id;";
         try {
-            String sql = "WITH RECURSIVE childs(id, visited) AS("
-                    + " SELECT layerid, ARRAY[]::varchar[] FROM layers WHERE parent = '" + fullImageID + "'"
-                    + " UNION"
-                    + " SELECT layers.layerid, (visited || childs.id) FROM childs, layers WHERE layers.parent = childs.id"
-                    + " AND NOT childs.id = ANY(visited))"
-                    + " SELECT imageid FROM childs, images WHERE images.imageid = childs.id;";
-
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 String parentalImgID = rs.getString(1);
                 childsIDLst.add(parentalImgID);
             }
-        } catch (SQLException e){
-            System.err.println(e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("LOG(DEBUG): Possible problematic SQL(gChdL): \n    " + sql);
+            throw e;
         }
         return childsIDLst;
     }
@@ -128,7 +127,39 @@ public class APIs {
         return null;
     }
 
-    public static boolean tag(String[] idList, String label) {
+    public static String getImgNameByID(String imageID, Connection conn)
+            throws IDNotFoundException, SQLException, IOException {
+        String fullid = Helper.getFullID(imageID, ImageDAO.getImageLstFromDocker());
+        String sql = "SELECT R.reponame, T.tag FROM Repositories R, Tags T WHERE "
+                + "T.imageid = '" + fullid + "' AND T.repoid = R.repoid";
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                return rs.getString(1) + ":" + rs.getString(2);
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            System.err.println("LOG(DEBUG): Possible problematic SQL(gID): \n    " + sql);
+            throw e;
+        }
+    }
+
+    public static boolean tag(String[] idList, String label, Connection conn)
+            throws SQLException {
+        String sql = null;
+        try {
+            for (String id : idList) {
+                sql = "INSERT INTO Labels VALUES('" + label + "', '" + id + "')";
+                Statement stmt = conn.createStatement();
+                stmt.execute(sql);
+            }
+        } catch (SQLException e) {
+            System.err.println("LOG(DEBUG): Possible problematic SQL(gID): \n    " + sql);
+            throw e;
+        }
+
         return false;
     }
 }

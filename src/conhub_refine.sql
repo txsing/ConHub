@@ -8,7 +8,6 @@ create table layers(
         parent varchar(64) references layers(layerid) On Delete Cascade
 );
 
-
 create table users(
         userid varchar(24) primary key,
         passwd varchar(12) not null,

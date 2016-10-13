@@ -27,9 +27,12 @@ public class ParserTest {
                 + "and I.imageid = T.imageid "
                 + "and T.repoid = R.repoid";
         
-        String sql2 = Parser.parseIntersect(conn, sql1.toLowerCase());
-        parseChildTest(sql2);
-
+        //String sql2 = Parser.parseIntersect(conn, sql1.toLowerCase());
+        String sql3 = "TAG('test', select I.imageid "
+                + "from Images I "
+                + "where I.imageid in CHILD(INTERSECTION('7db','ef5b')))";
+        //parseChildTest(sql2);
+        Parser.parseCQL(conn, sql3);
     }
     
     static void parseChildTest(String sql) {
