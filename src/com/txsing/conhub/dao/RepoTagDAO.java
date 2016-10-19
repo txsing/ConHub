@@ -12,7 +12,10 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.json.simple.JSONObject;
 
 /**
  *
@@ -20,7 +23,33 @@ import java.util.List;
  */
 public class RepoTagDAO {
 
-    public static List<String> getImageTagListFromDB(String repoid, Connection conn) throws SQLException{
+    public static Map<String, List> convertJsonToRepoMap(JSONObject repoJSONObject, String regName) {
+        Map<String, List> repoMap = new HashMap<>();
+        for (Object repokey : repoJSONObject.keySet()) {
+            List<String> taglist = new ArrayList<>();
+            String repoName = (String) repokey;
+            String repoFullString = regName + ":" + repoName;
+
+            JSONObject tagJSONObject = (JSONObject) repoJSONObject
+                    .get(repoName);
+            for (Object tagkey : tagJSONObject.keySet()) {
+                String tag = (String) tagkey;
+                if (!tag.contains("@")) {
+                    String tagAfterProcess
+                            = tag.substring(tag.indexOf(":") + 1);
+                    String imageID = tagJSONObject.get(tag).toString();
+                    imageID = imageID.substring(imageID.indexOf("sha") + 7);
+                    taglist.add(tagAfterProcess.concat(":")
+                            .concat(imageID));
+                }
+
+            }
+            repoMap.put(repoFullString, taglist);
+        }
+        return repoMap;
+    }
+
+    public static List<String> getImageTagListFromDB(String repoid, Connection conn) throws SQLException {
         String sql = "SELECT tag FROM tags WHERE repoid = '" + repoid + "'";
         try {
             List<String> resultLst = new ArrayList<>();
@@ -39,8 +68,8 @@ public class RepoTagDAO {
         }
     }
 
-    public static List<List<String>> getRepoListFromDB(String registryName
-            , Connection conn) throws SQLException{
+    public static List<List<String>> getRepoListFromDB(String registryName,
+             Connection conn) throws SQLException {
         String getRepoSQL = getRepoSQL = "SELECT repoid, reponame, regname"
                 + " FROM repositories WHERE"
                 + " regname = '" + registryName + "'";
@@ -68,16 +97,17 @@ public class RepoTagDAO {
         }
     }
 
-    /***
-     * 
+    /**
+     * *
+     *
      * @param conn
      * @param repoName
      * @param regName
      * @return the id of the inserted repo.
      * @throws java.lang.Exception
      */
-    public static String insertNewRepoIntoDB(Connection conn, String repoName
-            , String regName) throws SQLException{
+    public static String insertNewRepoIntoDB(Connection conn, String repoName,
+             String regName) throws SQLException {
         String sql = null;
         try {
             SimpleDateFormat formater = new SimpleDateFormat("YYMMddHHmmssS");
@@ -95,9 +125,24 @@ public class RepoTagDAO {
             throw e;
         }
     }
-    
-    public static boolean insertNewTagIntoDB(Connection conn, String tag
-            , String imageID, String repoID) throws SQLException{
+
+    public static void deleteRepoFromDB(Connection conn, String repoName,
+             String regName) throws SQLException {
+        String sql = null;
+        try {
+            sql = "DELETE FROM repositories WHERE regName = '" + regName + "' AND "
+                    + "repoName = '" + repoName + "'";
+            Statement stmt = conn.createStatement();
+            stmt.executeUpdate(sql);
+            stmt.close();
+        } catch (SQLException e) {
+            System.err.println("LOG(DEBUG): Possible problematic SQL(delRP): \n    " + sql);
+            throw e;
+        }
+    }
+
+    public static boolean insertNewTagIntoDB(Connection conn, String tag,
+             String imageID, String repoID) throws SQLException {
         String sql = "INSERT INTO tags VALUES('" + tag + "', '" + imageID
                 + "', '" + repoID + "')";
         try {
@@ -111,20 +156,34 @@ public class RepoTagDAO {
             throw e;
         }
     }
-    
-    public static String getRepoID(Connection conn, String regName, String repoName) throws SQLException{
+
+    public static void deleteTagFromDB(Connection conn, String tag, String repoID) throws SQLException {
+        String sql = null;
+        try {
+            sql = "DELETE FROM tags WHERE repoid = '" + repoID + "' AND "
+                    + "tag = '" + tag + "'";
+            Statement stmt = conn.createStatement();
+            stmt.executeUpdate(sql);
+            stmt.close();
+        } catch (SQLException e) {
+            System.err.println("LOG(DEBUG): Possible problematic SQL(delTag): \n    " + sql);
+            throw e;
+        }
+    }
+
+    public static String getRepoID(Connection conn, String regName, String repoName) throws SQLException {
         String sql = "SELECT repoid FROM repositories WHERE reponame = '"
                 + repoName + "' AND regname = '"
-                + regName+"'";
+                + regName + "'";
         String repoID = null;
-        try{
+        try {
             Statement stmt = conn.createStatement();
             ResultSet repoRs = stmt.executeQuery(sql);
-            while(repoRs.next()){
+            while (repoRs.next()) {
                 repoID = repoRs.getString(1);
             }
-        } catch(Exception e){
-            System.err.println("LOG(DEBUG): Possible problematic SQL(gRPID): \n    "+sql);
+        } catch (Exception e) {
+            System.err.println("LOG(DEBUG): Possible problematic SQL(gRPID): \n    " + sql);
             //System.err.println(e.getMessage());
             throw e;
         }

@@ -5,12 +5,14 @@
  */
 package com.txsing.conhub.mgprocor;
 
+import com.txsing.conhub.app.*;
 import com.txsing.conhub.exceptions.DBConnectException;
 import com.txsing.conhub.exceptions.IDNotFoundException;
 import com.txsing.conhub.ult.*;
 import java.io.*;
 import java.sql.*;
 import java.util.*;
+import javax.swing.JFrame;
 
 /**
  *
@@ -23,19 +25,29 @@ public class CmdExecutor {
     }
 
     public static List<String> routeAndExecute(String cmd) {
+        List<String> result = new ArrayList<>();;
         if (cmd.startsWith("docker")) {
-            return sendCmdToDocker(cmd);
+            result = sendCmdToDocker(cmd);
         } else if (cmd.toLowerCase().startsWith("select")) {
-            return sendCmdToDB(cmd);
-        }else if(cmd.matches("\\s+")){
-            return null;
-        } 
-        else {
+            result = sendCmdToDB(cmd);
+        } else if (cmd.startsWith("conviz")) {
+            String[] args = cmd.split(" ");
+            ConViz frame = new ConViz(args[1], args[2]);
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.setSize(400, 600);
+            frame.setVisible(true);
+        } else if (cmd.startsWith("conr")) {
+            //ConR frame = new ConR(xxx);
+            //return null;
+        } else if (cmd.matches("\\s+")) {
+        } else if (cmd.equals("quit")) {
+            System.out.println("Goodbye");
+            System.exit(0);
+        } else {
             System.err.println("LOG(ERROR): Unsupported Commands");
-            List<String> result = new ArrayList<>();
-            result.add(Constants.CONHUB_RES_SEPARATOR);
-            return null;
         }
+        result.add(Constants.CONHUB_RES_SEPARATOR);
+        return result;
     }
 
     /**
@@ -46,50 +58,54 @@ public class CmdExecutor {
         try {
             Connection conn = DBConnector.connectPostgres();
             cmd = Parser.parseCQL(conn, cmd);
-            if(!cmd.startsWith("TAG: ")){
-                result = executeSQL(conn, cmd);
-            }else{
+            if (!cmd.startsWith("TAG: ")) {
+//                String[] cmdArrays = {"psql", "-U", "txsing",
+//                    "-d", "consql", "-c", cmd};
+//                result = executeNonInteractiveShellCMD(cmdArrays, System.out);
+              result = executeSQL(conn, cmd);
+            } else {
                 result = new ArrayList<>();
                 result.add(cmd);
-            }            
+            }
             conn.close();
         } catch (IDNotFoundException e) {
             System.err.println(e.getMessage());
             System.err.println("LOG(ERROR): failed to execute CQL");
-        } catch (DBConnectException e){
+        } catch (DBConnectException e) {
             System.err.println(e.getMessage());
             System.err.println("LOG(ERROR): failed to connect DB");
-        } catch (Exception e){
+        } catch (Exception e) {
             System.err.println(e.getMessage());
             System.err.println("LOG(ERROR): failed to execute CQL");
+        }finally{
+            return result;
         }
-        return result;
     }
 
-    public static List<String> executeSQL(Connection conn, String sql) throws SQLException{
+    public static List<String> executeSQL(Connection conn, String sql) throws SQLException {
         List<String> resultStringList = new ArrayList<>();
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
 
-            ResultSetMetaData rsmd = rs.getMetaData();
-            int columnCount = rsmd.getColumnCount();
-            
-            //print headers
-            String headline = "";
-            for (int i = 1; i <= columnCount; i++){
-                headline = headline + rsmd.getColumnName(i)+"\t";
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnCount = rsmd.getColumnCount();
+        
+        //print headers
+        StringBuilder headline = new StringBuilder();
+        //String headline = "";
+        for (int i = 1; i <= columnCount; i++) {
+            headline.append(String.format("# %-12s", rsmd.getColumnLabel(i)));
+        }
+        resultStringList.add(headline.toString().toUpperCase());
+
+        //print values
+        while (rs.next()) {
+            StringBuilder line = new StringBuilder();
+            for (int i = 1; i <= columnCount; i++) {
+                line.append(String.format("| %-12s", rs.getString(i)));
             }
-            resultStringList.add(headline.toUpperCase());
-            
-            //print values
-            while (rs.next()) {
-                String line = "";
-                for (int i = 1; i <= columnCount; i++) {
-                    line = line + rs.getString(i) + "\t";
-                }
-                resultStringList.add(line);
-            }
-        resultStringList.add(Constants.CONHUB_RES_SEPARATOR);
+            resultStringList.add(line.toString());
+        }
         return resultStringList;
     }
 
@@ -103,7 +119,7 @@ public class CmdExecutor {
             if (isIntervativeCmd(cmdParaArray)) {
                 return executeInteractiveDockerCMD(cmdParaArray);
             } else {
-                return executeNonInteractiveDockerCMD(cmdParaArray, System.out);
+                return executeNonInteractiveShellCMD(cmdParaArray, System.out);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -111,7 +127,15 @@ public class CmdExecutor {
         return null;
     }
 
-    public static List<String> executeNonInteractiveDockerCMD(
+    /**
+     * this function behaves like a bash shell, receiving and execute commands,
+     * return exactly the same result as real terminal bash shell returns.
+     *
+     * @param cmdParaArray
+     * @param os
+     * @return
+     */
+    public static List<String> executeNonInteractiveShellCMD(
             String[] cmdParaArray, OutputStream os) {
         List<String> resultStringList = new ArrayList<>();
         try {
@@ -124,18 +148,16 @@ public class CmdExecutor {
             BufferedReader reader
                     = new BufferedReader(new InputStreamReader(is));
 
-            String line;            
+            String line;
             while ((line = reader.readLine()) != null) {
-                os.write((line+"\n").getBytes());
+                os.write((line + "\n").getBytes());
                 os.flush();
                 //System.out.println(line);                
-                if(!cmdParaArray[1].equals("pull") && !reader.ready()){
+                if (!cmdParaArray[1].equals("pull") && !reader.ready()) {
                     break;
                 }
             }
             is.close();
-            
-            resultStringList.add("------");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -179,25 +201,27 @@ public class CmdExecutor {
         }
         return resultStringList;
     }
-    
-    private static boolean isIntervativeCmd(String[] cmdParaArray){
+
+    private static boolean isIntervativeCmd(String[] cmdParaArray) {
         //e,g,. docker attach/exec
-        if(Constants.DOCKER_INTERACTIVE_CMD.contains(cmdParaArray[1])){
+        if (Constants.DOCKER_INTERACTIVE_CMD.contains(cmdParaArray[1])) {
             return true;
-        }else if(cmdParaArray[1].equals("run")) {
+        } else if (cmdParaArray[1].equals("run")) {
             List<String> tmpList = Arrays.asList(cmdParaArray);
-            
+
             //"docker run -d -i tomcat bash" is not interactive
-            if(tmpList.contains("-d"))
+            if (tmpList.contains("-d")) {
                 return false;
-            
+            }
+
             //"docker run -i tomcat bash" is interactive
-            if(tmpList.contains("-i"))
+            if (tmpList.contains("-i")) {
                 return true;
-            
+            }
+
             //docker run hello-world
             return false;
-        }else{
+        } else {
             return false;
         }
     }

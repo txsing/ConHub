@@ -5,18 +5,15 @@
  */
 package com.txsing.conhub.app;
 
-import javax.swing.JFrame;
-
 /**
  *
  * @author txsing
  */
-public class ConVizTest {
+public class ConRTest {
     public static void main(String[] agrs){
-        ConViz frame = new ConViz("cd17a", "e6714");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(400, 600);
-        frame.setVisible(true);
+        Object[][] data = {{"fde4","hello"},
+        {"dfr4", "good"},
+        {"ref5", "world"}};
+        ConR frame = new ConR(data);
     }
-    
 }

@@ -23,7 +23,7 @@ public class ParserTest {
         Connection conn = DBConnector.connectPostgres();
         String sql1 = "select R.reponame, T.tag "
                 + "from Images I, Tags T, Repositories R "
-                + "where I.imageid in CHILD(INTERSECTION('f41a','fef5')) "
+                + "where I.imageid in CHILD(INTERSECTION('cd17','a78a')) "
                 + "and I.imageid = T.imageid "
                 + "and T.repoid = R.repoid";
         
@@ -32,7 +32,7 @@ public class ParserTest {
                 + "from Images I "
                 + "where I.imageid in CHILD(INTERSECTION('7db','ef5b')))";
         //parseChildTest(sql2);
-        Parser.parseCQL(conn, sql3);
+        Parser.parseCQL(conn, sql1);
     }
     
     static void parseChildTest(String sql) {

@@ -83,9 +83,9 @@ public class ContainerDAO {
     public static List<String> getContainerLstFromDocker() throws IOException {
         List<String> conDKLst = new ArrayList<>();
         
-        String[] cmdParaArray = {"docker", "ps", "-a", "-q"};
+        String[] cmdParaArray = {"docker", "ps", "-a", "-q","--no-trunc"};
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CmdExecutor.executeNonInteractiveDockerCMD(cmdParaArray, baos);
+        CmdExecutor.executeNonInteractiveShellCMD(cmdParaArray, baos);
         String conidLst = baos.toString();
         baos.close();
 

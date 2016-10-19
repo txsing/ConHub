@@ -3,12 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.txsing.conhub.app;
+package com.txsing.conhub.gui;
 
-/**
- *
- * @author txsing
- */
 import java.awt.GridLayout;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
@@ -19,13 +15,13 @@ import javax.swing.*;
  *
  * @author txsing
  */
-public class ConR extends JFrame {
+public class ConRecoveryGUI extends JFrame {
 
     GridLayout selectCon;
     JTable contable;
     JButton confirmButton;
 
-    public ConR(Object[][] runningContainers) throws HeadlessException {
+    public ConRecoveryGUI(Object[][] runningContainers) throws HeadlessException {
         initComponents(runningContainers);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(400, 300);
@@ -36,7 +32,7 @@ public class ConR extends JFrame {
         selectCon = new GridLayout(2, 1);
         this.setLayout(selectCon);
 
-        String titles[] = {"conid", "name"};
+        String titles[] = {"conid", "name", "status"};
         contable = new JTable(runningContainers, titles);
         contable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.add(contable);

@@ -23,7 +23,7 @@ public class JsonDAO {
         String[] cmdParaArray = {"/bin/bash", "-c", "echo scse | sudo -S "
             + "cat /var/lib/docker/image/aufs/repositories.json"};
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CmdExecutor.executeNonInteractiveDockerCMD(cmdParaArray, baos);
+        CmdExecutor.executeNonInteractiveShellCMD(cmdParaArray, baos);
         String imageInfoJsonString = baos.toString();
         //remove the firstCotd pair of bracket, [ {xxxxx} ]
         imageInfoJsonString = imageInfoJsonString.substring(
@@ -45,7 +45,7 @@ public class JsonDAO {
         JSONObject jsonObject;
         String[] cmdParaArray = {"docker", "inspect", ID};
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CmdExecutor.executeNonInteractiveDockerCMD(cmdParaArray, baos);
+        CmdExecutor.executeNonInteractiveShellCMD(cmdParaArray, baos);
         String imageInfoJsonString = baos.toString();
 
         imageInfoJsonString = imageInfoJsonString.substring(1,

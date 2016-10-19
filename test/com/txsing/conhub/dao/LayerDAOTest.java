@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class LayerDAOTest {
     public static void main(String[] args) throws Exception{
-        List<String> layerLST = LayerDAO.getLayerIDList("9e154");
+        List<String> layerLST = LayerDAO.getLayerIDList("cd17");
         for(String layer : layerLST){
             System.out.println(layer);
         }

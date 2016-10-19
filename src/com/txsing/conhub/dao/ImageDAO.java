@@ -38,7 +38,7 @@ public class ImageDAO {
         } catch (SQLException e) {
             System.err.println("LOG(DEBUG): Possible problematic SQL(DelImg): \n    " + sql);
             //System.err.println(e.getMessage());
-            return false;
+            throw e;
         }
     }
 
@@ -66,7 +66,7 @@ public class ImageDAO {
 
         /* ###### Insert Layers ###### */
         LayerDAO.insertLayersIntoDB(LayerDAO.getLayerIDList(imageID), conn);
-
+     
         /* ###### Insert New Image #### */
         try {
             newImage = new Image(JsonDAO.getImageAndConJSONInfo(imageID));
@@ -130,7 +130,7 @@ public class ImageDAO {
         String[] cmdParaArray = {"docker", "images", "-q", "--no-trunc"};
         
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CmdExecutor.executeNonInteractiveDockerCMD(cmdParaArray, baos);
+        CmdExecutor.executeNonInteractiveShellCMD(cmdParaArray, baos);
         String imageidLst = baos.toString();
         baos.close();
         

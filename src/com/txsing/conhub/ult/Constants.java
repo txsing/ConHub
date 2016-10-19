@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class Constants {
     //separator
-    public static final String CONHUB_RES_SEPARATOR = "---------";
+    public static final String CONHUB_RES_SEPARATOR = "";
     
     //ConHub default parameters
     public static final String CONHUB_DEFAULT_REGISTRY = "dockerhub";

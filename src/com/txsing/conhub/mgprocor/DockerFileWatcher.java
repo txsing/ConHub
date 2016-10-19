@@ -8,8 +8,6 @@ import java.nio.file.attribute.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Watch Docker directories for changes to files.
@@ -86,7 +84,7 @@ public class DockerFileWatcher extends Thread {
      * Process all events for keys queued to the watcher
      */
     void processEvents() {
-        System.out.printf("LOG(INFO): DIR \"%s\" MONITORED\n", dir);
+        //System.out.printf("LOG(INFO): DIR \"%s\" MONITORED\n", dir);
         for (;;) {
             // wait for key to be signalled
             WatchKey key;
@@ -117,14 +115,14 @@ public class DockerFileWatcher extends Thread {
 
                 //event detected
                 //System.out.format("%s: %s\n", event.kind().name(), child);
-                if (type.equals("image") && !child.toString().endsWith("tmp")) {
+                if (type.equals("image") && !child.toString().contains("tmp")) {
                     System.out.println("LOG(INFO): IMAGE SYNC TRIGGERED");
-                    //docker pull a new image of which the image id is new, then
-                    //signal is set to false, cos the repo of that image will be
-                    //synced along with the image itself.
-                    //However, if docker pull a new image of which the image id is
-                    //already existing (the content is the same, the image is new
-                    //in terms of "name") in this case, the singal is set to true 
+                    /* docker pull a new image of which the image id is new, then
+                    signal is set to false, cos the repo of that image will be
+                    synced along with the image itself.
+                    However, if docker pull a new image of which the image id is
+                    already existing (the content is the same, the image is new
+                    in terms of "name") in this case, the singal is set to true */
                     ReadWriteLock rwl = new ReentrantReadWriteLock();
                     Lock writeLock = rwl.writeLock();
                     writeLock.lock();
@@ -151,7 +149,7 @@ public class DockerFileWatcher extends Thread {
                         ex.printStackTrace();
                     }
                     if (Synchro.getInstance().SIGNAL_SYNC_REPO == true) {
-                        System.out.println("LOG(INFO): WHOLE REPO SYNC TRIGGERED");
+                        System.out.println("LOG(INFO): REPO SYNC TRIGGERED");
                         try {
                             Synchro.getInstance().syncRepo();
                         } catch (Exception e) {
@@ -160,8 +158,24 @@ public class DockerFileWatcher extends Thread {
                         }
 
                     } else {
-                        Synchro.getInstance().SIGNAL_SYNC_REPO = true;
+                        if(!Synchro.getInstance().SIGNAL_SYNC_REPO_FST){
+                            //System.out.println("LOG(DEBUG): No repo sync: step 1");
+                            Synchro.getInstance().SIGNAL_SYNC_REPO_FST = true;
+                        }else{
+                            if(!Synchro.getInstance().SIGNAL_SYNC_REPO_SEC){
+                                //System.out.println("LOG(DEBUG): No repo sync: step 2");
+                                Synchro.getInstance().SIGNAL_SYNC_REPO_SEC = true;
+                            }                                
+                        }
                     }
+                    if(Synchro.getInstance().SIGNAL_SYNC_REPO_FST 
+                            && Synchro.getInstance().SIGNAL_SYNC_REPO_SEC){
+                        //System.out.println("LOG(DEBUG): No repo sync: step 3");
+                         Synchro.getInstance().SIGNAL_SYNC_REPO = true;
+                         Synchro.getInstance().SIGNAL_SYNC_REPO_FST = false;
+                         Synchro.getInstance().SIGNAL_SYNC_REPO_SEC = false;
+                    }
+                       
                 } else if (type.equals("container")
                         && !event.kind().name().equals("ENTRY_MODIFY")) {
                     System.out.println("LOG(INFO): CONTAINER SYNC TRIGGERED");

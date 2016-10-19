@@ -20,12 +20,12 @@ public class APIsTest {
         
         //Parental List
         
-        List<String> result = getParentalImgListTest("f41a",conn);
+        List<String> result = getParentalImgListTest("a78a",conn);
         for(String id : result)
             System.out.println(id);
         //Intersection
-//      String result = getImageIntersectionTest("fef5", "f41a", conn);
-//      System.err.println(result);
+      String result1 = getImageIntersectionTest("a78a", "cd17", conn);
+      System.err.println(result1);
         conn.close();
         
     }

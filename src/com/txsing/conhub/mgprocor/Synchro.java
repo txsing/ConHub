@@ -10,12 +10,8 @@ import com.txsing.conhub.dao.ImageDAO;
 import com.txsing.conhub.dao.JsonDAO;
 import com.txsing.conhub.dao.RepoTagDAO;
 import com.txsing.conhub.ult.*;
-import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.*;
 import org.json.simple.JSONObject;
 
 /**
@@ -27,10 +23,14 @@ public class Synchro {
     private List<List<String>> repoDBLst;
     private static Synchro theOne;
     protected boolean SIGNAL_SYNC_REPO;
+    protected boolean SIGNAL_SYNC_REPO_FST;
+    protected boolean SIGNAL_SYNC_REPO_SEC;
 
-    //constructor
+//constructor
     private Synchro() {
         try {
+            this.SIGNAL_SYNC_REPO_FST = false;
+            this.SIGNAL_SYNC_REPO_SEC = false;
             Connection conn = DBConnector.connectPostgres();
             this.repoDBLst = RepoTagDAO
                     .getRepoListFromDB(Constants.CONHUB_DEFAULT_REGISTRY, conn);
@@ -107,9 +107,9 @@ public class Synchro {
         Connection conn = DBConnector.connectPostgres();
         List<String> conDBLst = ContainerDAO.getContainerLstFromDB(conn);
         List<String> conDKLst = ContainerDAO.getContainerLstFromDocker();
-
+        
         for (String conId : conDKLst) {
-            if (conDBLst.contains(conId)) {
+            if (!conDBLst.contains(conId)) {
                 ContainerDAO.insertNewContainerIntoDB(conId, conn);
             }
         }
@@ -158,8 +158,25 @@ public class Synchro {
     private void syncRepo(String regName) throws Exception {
         try {
             Connection conn = DBConnector.connectPostgres();
-
             JSONObject repoJSONObject = JsonDAO.getRepoJSONInfo();
+            //Map repoMap = RepoTagDAO.convertJsonToRepoMap(repoJSONObject, regName);
+
+            for (int i = 0; i < repoDBLst.get(0).size(); i++) {
+                String repo = repoDBLst.get(0).get(i).substring(regName.length() + 1);
+                if (!repoJSONObject.containsKey(repo)) {
+                    RepoTagDAO.deleteRepoFromDB(conn, regName, regName);
+                } else {
+                    String repoID = repoDBLst.get(1).get(i);
+                    List<String> tagDBLst = RepoTagDAO.getImageTagListFromDB(repoID, conn);
+                    JSONObject tagJSONObject = (JSONObject) repoJSONObject
+                            .get(repo);
+                    for (String tag : tagDBLst) {
+                        if (!tagJSONObject.containsKey(tag)) {
+                            RepoTagDAO.deleteTagFromDB(conn, tag, repoID);
+                        }
+                    }
+                }
+            }
 
             for (Object repokey : repoJSONObject.keySet()) {
                 String repoName = (String) repokey;
@@ -175,7 +192,6 @@ public class Synchro {
 
                     JSONObject tagJSONObject = (JSONObject) repoJSONObject
                             .get(repoName);
-
                     for (Object tagkey : tagJSONObject.keySet()) {
                         String tag = (String) tagkey;
                         if (tag.contains("@")) {
@@ -209,6 +225,7 @@ public class Synchro {
                     }
                 }
             }
+
             conn.close();
         } catch (Exception e) {
             System.err.println(e.getMessage());

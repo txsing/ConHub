@@ -20,7 +20,7 @@ create table images(
 	dockerfileid varchar(12),
 	size numeric(10),
 	author varchar(24),
-        foreign key (imageid) references layers(layerid) On Delete Restrict
+        foreign key (imageid) references layers(layerid) On Delete Cascade
 );
 
 
@@ -76,5 +76,3 @@ create table labels(
         label varchar(24),
         id    varchar(64)
 );
-
-

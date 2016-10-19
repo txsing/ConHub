@@ -24,7 +24,7 @@ public class ConViz extends JFrame {
         try {
             Connection conn = DBConnector.connectPostgres();
             String rootID = APIs.getImageIntersection(imgID1, imgID2, conn);
-            System.err.println("LOG(DEBUG): rootID: " + rootID);
+            //System.err.println("LOG(DEBUG): rootID: " + rootID);
 
             mxGraph graph = new mxGraph();
             Object dummyNode = graph.getDefaultParent();
@@ -33,7 +33,7 @@ public class ConViz extends JFrame {
             String imgName = APIs.getImgNameByID(rootID, conn);
             Object rootNode = graph.insertVertex(dummyNode, rootID,
                     imgName + "\n(" + rootID.substring(0, 12) + ")",
-                    100, 20, 7 * imgName.length(), 33);
+                    100, 20, getNodeLength(imgName), 33);
             graph.getModel().endUpdate();
 
             Object parentNode = rootNode;
@@ -53,7 +53,7 @@ public class ConViz extends JFrame {
                 imgName = APIs.getImgNameByID(curid, conn);
                 curNode = graph.insertVertex(dummyNode, curid,
                         imgName + "\n(" + curid.substring(0, 12) + ")",
-                        20, 20 + 60 * count, 7 * imgName.length(), 36);
+                        20, 20 + 60 * count, getNodeLength(imgName), 36);
                 graph.insertEdge(dummyNode, null, "", parentNode, curNode);
                 graph.getModel().endUpdate();
 
@@ -63,7 +63,8 @@ public class ConViz extends JFrame {
             graph.getModel().beginUpdate();
             imgName = APIs.getImgNameByID(imgID1, conn);
             curNode = graph.insertVertex(dummyNode, imgID1,
-                    imgName + "\n(" + imgID1 + ")", 20, 20 + 60 * count, 7 * imgName.length(), 33);
+                    imgName + "\n(" + imgID1 + ")", 20, 20 + 60 * count,
+                    getNodeLength(imgName), 33,"ROUNDED;strokeColor=black;");
             graph.insertEdge(dummyNode, null, "", parentNode, curNode);
             graph.getModel().endUpdate();
 
@@ -85,7 +86,7 @@ public class ConViz extends JFrame {
                 imgName = APIs.getImgNameByID(curid, conn);
                 curNode = graph.insertVertex(dummyNode, curid,
                         imgName + "\n(" + curid.substring(0, 12) + ")",
-                        180, 20 + 60 * count, 7 * imgName.length(), 36);
+                        180, 20 + 60 * count, getNodeLength(imgName), 36);
                 graph.insertEdge(dummyNode, null, "", parentNode, curNode);
                 graph.getModel().endUpdate();
                 parentNode = curNode;
@@ -94,15 +95,20 @@ public class ConViz extends JFrame {
             graph.getModel().beginUpdate();
             imgName = APIs.getImgNameByID(imgID2, conn);
             curNode = graph.insertVertex(dummyNode, imgID2,
-                    imgName + "\n(" + imgID2 + ")", 180, 20 + 60 * count, 7 * imgName.length(), 33);
+                    imgName + "\n(" + imgID2 + ")", 180, 20 + 60 * count,
+                    getNodeLength(imgName), 33, "ROUNDED;strokeColor=black;");
             graph.insertEdge(dummyNode, null, "", parentNode, curNode);
             graph.getModel().endUpdate();
 
             mxGraphComponent graphComponent = new mxGraphComponent(graph);
             getContentPane().add(graphComponent);
-
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
+    }
+    
+    private int getNodeLength(String name){
+        int len = name.length() > 12 ? name.length() : 12;
+        return len * 8;
     }
 }

@@ -12,7 +12,6 @@ package com.txsing.conhub.ult;
 import com.txsing.conhub.exceptions.DBConnectException;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 
 public class DBConnector {
 
