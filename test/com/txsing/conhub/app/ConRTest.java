@@ -11,9 +11,5 @@ package com.txsing.conhub.app;
  */
 public class ConRTest {
     public static void main(String[] agrs){
-        Object[][] data = {{"fde4","hello"},
-        {"dfr4", "good"},
-        {"ref5", "world"}};
-        ConR frame = new ConR(data);
     }
 }

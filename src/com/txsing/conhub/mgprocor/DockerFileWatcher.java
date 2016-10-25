@@ -185,6 +185,7 @@ public class DockerFileWatcher extends Thread {
                                 event.kind().name());
                     } catch (Exception e) {
                         System.err.println(e.getMessage());
+                        //e.printStackTrace();
                         System.err.println("LOG(ERROR): Failed to sync container");
                     }
 

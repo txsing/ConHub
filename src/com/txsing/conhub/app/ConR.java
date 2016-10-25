@@ -9,74 +9,83 @@ package com.txsing.conhub.app;
  *
  * @author txsing
  */
-import java.awt.GridLayout;
-import java.awt.HeadlessException;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.*;
+import com.txsing.conhub.api.*;
+import com.txsing.conhub.ult.DBConnector;
+import java.sql.Connection;
 
 /**
  *
  * @author txsing
  */
-public class ConR extends JFrame {
+public class ConR {
 
-    GridLayout selectCon;
-    JTable contable;
-    JButton confirmButton;
+    String badImgID;
+    String badImgName;
+    String badImgAuthor;
+    String safeImgID;
+    String safeImgName;
+    String conID;
+    String conName;
 
-    public ConR(Object[][] runningContainers) throws HeadlessException {
-        initComponents(runningContainers);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setSize(400, 300);
-        this.setVisible(true);
-    }
-
-    void initComponents(Object[][] runningContainers) {
-        selectCon = new GridLayout(2, 1);
-        this.setLayout(selectCon);
-
-        String titles[] = {"conid", "name"};
-        contable = new JTable(runningContainers, titles);
-        contable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        this.add(contable);
-
-        confirmButton = new JButton("recovery");
-        confirmButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (contable.getSelectedRow() != -1) {
-
-                }
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-        });
-    }
-
-    class SelectedConInfoGUI extends JFrame {
-
-        JLabel conIDL = new JLabel("Bad Container: ");
-        JLabel conImgL = new JLabel("Bad Image: ");
-        JLabel emailL = new JLabel("maintainer: ");
-        JLabel lastStableImgL = new JLabel("Last Stable Image: ");
-
-        JTextField conIDF;
-        JTextField conImgF;
-        JTextField emailF;
-        JTextField lastStableImgF;
-
-        public SelectedConInfoGUI(String ID, String conName, String badImgID, String badImgName,
-                String email, String goodImgID, String goodImgName) throws HeadlessException {
-            initComponents(ID, conName, badImgID, badImgName, email,goodImgID,goodImgName);
-            this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            this.setSize(300, 400);
-            this.setVisible(true);
+    public ConR(String conID) {
+        try {
+            System.out.println("\n");
+            init(conID);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
 
-        void initComponents(String ID, String conName, String badimgID, String badImgName,
-                String email, String goodImgID, String goodImgName) {
-            conIDF = new JTextField(ID + "/n" + conName);
-            conImgF = new JTextField(badimgID + "/n" + badImgName);
+    }
+
+    void init(String conID) throws Exception {
+        Connection conn = DBConnector.connectPostgres();
+        String[] conInfo = APIs.getConInfo(conID, conn);
+
+        this.conID = conInfo[0];
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%15s", "BUGGY CONTAINER"));
+        sb.append(String.format(": %-13s", this.conID.substring(0, 12)));
+        //sb.append("\n");
+
+        this.conName = conInfo[5];
+        //sb.append(String.format("%15s", " "));
+        sb.append(String.format("%-15s", "(" + this.conName + ")"));
+        sb.append("\n");
+
+        this.badImgID = conInfo[1];
+        sb.append(String.format("%15s", "BUGGY IMAGE"));
+        sb.append(String.format(": %-13s", this.badImgID.substring(0, 12)));
+        //sb.append("\n");
+
+        this.badImgName = APIs.getImgNameByID(badImgID, conn);
+        //sb.append(String.format("%15s", " "));
+        sb.append(String.format("%-15s", "(" + this.badImgName + ")"));
+        sb.append("\n");
+
+        this.badImgAuthor = APIs.getImgInfo(badImgID, conn)[3];
+        sb.append(String.format("%15s", "DEVELOPER"));
+        sb.append(String.format(": %-13s", this.badImgAuthor));
+        sb.append("\n");
+
+        this.safeImgID = APIs.getParentalImageID(badImgID, conn);
+        if (safeImgID == null) {
+            this.safeImgID = "N/A";
+            this.safeImgName = "N/A";
+        }else{
+            this.safeImgID = safeImgID.substring(0,12);
+            this.safeImgName = APIs.getImgNameByID(safeImgID, conn);
         }
+
+        sb.append(String.format("%15s", "LAST SAFE IMAGE"));
+        sb.append(String.format(": %-13s", this.safeImgID));
+        //sb.append("\n");
+
+        //sb.append(String.format("%15s", " "));
+        sb.append(String.format("%-15s", "("+this.safeImgName+")"));
+        sb.append("\n");
+        
+        System.out.println(sb.toString());
+
     }
 }

@@ -65,7 +65,9 @@ public class ImageDAO {
         Image newImage = null;
 
         /* ###### Insert Layers ###### */
-        LayerDAO.insertLayersIntoDB(LayerDAO.getLayerIDList(imageID), conn);
+        List<String> layerList = LayerDAO.getLayerIDList(imageID);
+        
+        LayerDAO.insertLayersIntoDB(layerList, conn);
      
         /* ###### Insert New Image #### */
         try {

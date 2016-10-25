@@ -14,10 +14,11 @@ import java.util.List;
  */
 public class LayerDAOTest {
     public static void main(String[] args) throws Exception{
-        List<String> layerLST = LayerDAO.getLayerIDList("cd17");
-        for(String layer : layerLST){
-            System.out.println(layer);
-        }
+        List<String> layerLST = LayerDAO.getLayerIDList("6689e9");
+//        for(String layer : layerLST){
+//            System.out.println(layer);
+//        }
+        System.err.println(layerLST.size());
         LayerDAO.insertLayersIntoDB(layerLST, DBConnector.connectPostgres());
     }
 }

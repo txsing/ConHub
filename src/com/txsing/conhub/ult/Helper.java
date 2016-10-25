@@ -31,14 +31,14 @@ public class Helper {
     public static String getFullID(String shortID, List<String> fullIDLst)
             throws IDNotFoundException {
         if (shortID == null || shortID.length() == 0) {
-            throw new IDNotFoundException("(ERROR): EMPTY INPUT");
+            throw new IDNotFoundException("(IDNotFoundException): EMPTY INPUT");
         }
 
         if (shortID.length() == 64) {
             if (fullIDLst.contains(shortID)) {
                 return shortID;
             } else {
-                throw new IDNotFoundException("'" + shortID + "' NO MATCH FOUND");
+                throw new IDNotFoundException("IDNotFoundException: '" + shortID + "' NO MATCH FOUND");
             }
         }
         boolean firstOccur = false;
@@ -49,12 +49,12 @@ public class Helper {
                     firstOccur = true;
                     result = fullid;
                 } else {
-                    throw new IDNotFoundException("AMBIGUOUS ID: " + shortID);
+                    throw new IDNotFoundException("(IDNotFoundException): AMBIGUOUS ID: " + shortID);
                 }
             }
         }
         if (!firstOccur) {
-            throw new IDNotFoundException("ID '" + shortID + "' NO MATCH FOUND");
+            throw new IDNotFoundException("IDNotFoundException: ID '" + shortID + "' NO MATCH FOUND");
         }
         return result;
     }
@@ -69,7 +69,7 @@ public class Helper {
             logger.addHandler(fh);
             logger.setUseParentHandlers(false);
             return logger;
-        }catch(IOException e){
+        } catch (IOException e) {
             System.err.println("(ERROR): Failed to init logger");
             System.err.println(e.getMessage());
         }

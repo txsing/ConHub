@@ -58,8 +58,8 @@ Insert into images values('5');
 
 select R.reponame, T.tag from Images I, Tags T, Repositories R where I.imageid = T.imageid and T.repoid = R.repoid;
 
-select I.imageid from Images I where I.imageid in CHILD(INTERSECTION(ef5b,7dbdd))
+TAG('buggy',select I.imageid from Images I where I.imageid in CHILD(INTERSECTION('6689e','3b5d')))
 
-select R.reponame, T.tag from Images I, Tags T, Repositories R where I.imageid in CHILD(INTERSECTION('cd17','a78a')) and I.imageid = T.imageid and T.repoid = R.repoid
+select R.reponame, T.tag from Images I, Tags T, Repositories R where I.imageid in CHILD(INTERSECTION('6689e','3b5d')) and I.imageid = T.imageid and T.repoid = R.repoid
 
 select C.name , R.reponame, T.tag from Containers C, Tags T, Repositories R where C.imageid = T.imageid and R.repoid = T.repoid

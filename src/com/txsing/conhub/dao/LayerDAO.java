@@ -6,7 +6,7 @@
 package com.txsing.conhub.dao;
 
 import com.txsing.conhub.mgprocor.CmdExecutor;
-import com.txsing.conhub.ult.Helper;
+import com.txsing.conhub.mgprocor.Synchro;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
@@ -16,7 +16,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 
 /**
@@ -30,27 +29,35 @@ public class LayerDAO {
         List<String> layerIDLstAftProcess = new ArrayList<>();
 
         String[] cmdParaArray = {"docker", "history", shortOrLongImageID, "-q", "--no-trunc"};
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CmdExecutor.executeNonInteractiveShellCMD(cmdParaArray, baos);
-        String layerIDLstString = baos.toString();
-        baos.close();
+        //ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        layerIDLst = CmdExecutor.executeNonInteractiveShellCMD(cmdParaArray, null);
+        if(layerIDLst.size() == 1){
+            layerIDLst = CmdExecutor.executeNonInteractiveShellCMD(cmdParaArray, null);
+           if(layerIDLst.size() == 1)
+                layerIDLst = CmdExecutor.executeNonInteractiveShellCMD(cmdParaArray, null);
+           if(layerIDLst.size() == 1)
+                layerIDLst = CmdExecutor.executeNonInteractiveShellCMD(cmdParaArray, null);
 
-        if (!layerIDLstString.equals("")) {
-            layerIDLst = Arrays.asList(layerIDLstString.split("\n"));
         }
+        //String layerIDLstString = baos.toString();
+        //baos.close();
 
+//        if (!layerIDLstString.equals("")) {
+//            layerIDLst = Arrays.asList(layerIDLstString.split("\n"));
+//        }
+        Synchro.getInstance().logger.info(shortOrLongImageID.substring(0,6)+": "+layerIDLst.size());
         for (String layer : layerIDLst) {
             if (!layer.equals("<missing>")) {
                 layerIDLstAftProcess.add(layer.substring(7)); //trim "sha256"
             }
         }
-
+        
         return layerIDLstAftProcess;
     }
 
     public static void insertLayersIntoDB(List<String> layerIDLst,
             Connection conn) throws SQLException {
-        Logger logger = Helper.getConHubLogger();
+        Logger logger = Synchro.getInstance().logger;
         String sql = null;
         Boolean flag;
         try {
@@ -68,10 +75,10 @@ public class LayerDAO {
                 sql = "INSERT INTO Layers VALUES('" + rootLayer + "', null)";
                 stmt.executeUpdate(sql);
                 
-                logger.info("Root layer inserted: "
-                        .concat(rootLayer)
-                        .concat("\nLayer list length: ")
-                        .concat(layerIDLst.size() + ""));
+//                logger.info("Root layer inserted: "
+//                        .concat(rootLayer)
+//                        .concat("\nLayer list length: ")
+//                        .concat(layerIDLst.size() + ""));
             }
             sql = "INSERT INTO layers(\"layerid\", \"parent\") SELECT '"
                     + layerIDLst.get(layerIDLst.size() - 1) + "', null "
@@ -99,7 +106,7 @@ public class LayerDAO {
                             + layerParent + "')";
                     stmt.executeUpdate(sql);
                     if (layerParent == null) {
-                        logger.info("Wrong layer insertion: "
+                        System.err.println("Wrong layer insertion: "
                                 .concat(layerid)
                                 .concat(", ")
                                 .concat(layerParent));

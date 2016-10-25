@@ -18,6 +18,49 @@ import java.util.*;
  */
 public class APIs {
 
+    public static String[] getConInfo(String conID, Connection conn)
+            throws SQLException {
+        String sql = "SELECT * FROM containers WHERE conid LIKE '" + conID + "%'";
+        String[] result = new String[7];
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                result[0] = rs.getString(1);
+                result[1] = rs.getString(2);
+                result[2] = rs.getString(3);
+                result[3] = rs.getString(4);
+                result[4] = rs.getString(5);
+                result[5] = rs.getString(6);
+                result[6] = rs.getString(7);
+            }
+        } catch (SQLException e) {
+            System.err.println("LOG(DEBUG): Possible problematic SQL(gConInfo): \n    " + sql);
+            throw e;
+        }
+        return result;
+    }
+
+    public static String[] getImgInfo(String imgID, Connection conn)
+            throws SQLException {
+        String sql = "SELECT * FROM images WHERE imageid LIKE '" + imgID + "%'";
+        String[] result = new String[4];
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                result[0] = rs.getString(1);
+                result[1] = rs.getString(2);
+                result[2] = rs.getString(3);
+                result[3] = rs.getString(4);
+            }
+        } catch (SQLException e) {
+            System.err.println("LOG(DEBUG): Possible problematic SQL(gInfoImg): \n    " + sql);
+            throw e;
+        }
+        return result;
+    }
+
     public static String getParentalImageID(String imageID, Connection conn)
             throws IDNotFoundException, SQLException, IOException {
 

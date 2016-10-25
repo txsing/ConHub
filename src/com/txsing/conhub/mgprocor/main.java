@@ -14,7 +14,7 @@ import java.io.IOException;
  * @author txsing
  */
 public class main {
-
+    
     public static void main(String[] args) {
         initSystem();
         try (Scanner scanner = new Scanner(System.in)) {

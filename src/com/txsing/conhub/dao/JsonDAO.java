@@ -47,11 +47,15 @@ public class JsonDAO {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CmdExecutor.executeNonInteractiveShellCMD(cmdParaArray, baos);
         String imageInfoJsonString = baos.toString();
-
+        
         imageInfoJsonString = imageInfoJsonString.substring(1,
                 imageInfoJsonString.lastIndexOf(']'));
 
         baos.close();
+        
+        if(imageInfoJsonString == null || imageInfoJsonString.equals(""))
+            return getImageAndConJSONInfo(ID);
+        
         jsonObject = (JSONObject) new JSONParser().parse(imageInfoJsonString);
         return jsonObject;
     }

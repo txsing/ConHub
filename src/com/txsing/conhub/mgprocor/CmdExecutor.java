@@ -28,7 +28,8 @@ public class CmdExecutor {
         List<String> result = new ArrayList<>();;
         if (cmd.startsWith("docker")) {
             result = sendCmdToDocker(cmd);
-        } else if (cmd.toLowerCase().startsWith("select")) {
+        } else if (cmd.toLowerCase().startsWith("select") 
+                || cmd.toLowerCase().startsWith("tag(") ) {
             result = sendCmdToDB(cmd);
         } else if (cmd.startsWith("conviz")) {
             String[] args = cmd.split(" ");
@@ -37,11 +38,11 @@ public class CmdExecutor {
             frame.setSize(400, 600);
             frame.setVisible(true);
         } else if (cmd.startsWith("conr")) {
-            //ConR frame = new ConR(xxx);
-            //return null;
+            String[] args = cmd.split(" ");
+            new ConR(args[1]);
         } else if (cmd.matches("\\s+")) {
         } else if (cmd.equals("quit")) {
-            System.out.println("Goodbye");
+            System.out.println("Goodbye!");
             System.exit(0);
         } else {
             System.err.println("LOG(ERROR): Unsupported Commands");
@@ -62,7 +63,7 @@ public class CmdExecutor {
 //                String[] cmdArrays = {"psql", "-U", "txsing",
 //                    "-d", "consql", "-c", cmd};
 //                result = executeNonInteractiveShellCMD(cmdArrays, System.out);
-              result = executeSQL(conn, cmd);
+                result = executeSQL(conn, cmd);
             } else {
                 result = new ArrayList<>();
                 result.add(cmd);
@@ -77,7 +78,7 @@ public class CmdExecutor {
         } catch (Exception e) {
             System.err.println(e.getMessage());
             System.err.println("LOG(ERROR): failed to execute CQL");
-        }finally{
+        } finally {
             return result;
         }
     }
@@ -89,7 +90,7 @@ public class CmdExecutor {
 
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
-        
+
         //print headers
         StringBuilder headline = new StringBuilder();
         //String headline = "";
@@ -119,7 +120,7 @@ public class CmdExecutor {
             if (isIntervativeCmd(cmdParaArray)) {
                 return executeInteractiveDockerCMD(cmdParaArray);
             } else {
-                return executeNonInteractiveShellCMD(cmdParaArray, System.out);
+                return executeNonInteractiveShellCMD(cmdParaArray, null);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -150,8 +151,11 @@ public class CmdExecutor {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                os.write((line + "\n").getBytes());
-                os.flush();
+                if (os != null) {
+                    os.write((line + "\n").getBytes());
+                    os.flush();
+                }
+                resultStringList.add(line);
                 //System.out.println(line);                
                 if (!cmdParaArray[1].equals("pull") && !reader.ready()) {
                     break;

@@ -12,6 +12,7 @@ import com.txsing.conhub.dao.RepoTagDAO;
 import com.txsing.conhub.ult.*;
 import java.sql.*;
 import java.util.*;
+import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 
 /**
@@ -25,10 +26,13 @@ public class Synchro {
     protected boolean SIGNAL_SYNC_REPO;
     protected boolean SIGNAL_SYNC_REPO_FST;
     protected boolean SIGNAL_SYNC_REPO_SEC;
+    
+    public Logger logger;
 
 //constructor
     private Synchro() {
         try {
+            this.logger = Helper.getConHubLogger();
             this.SIGNAL_SYNC_REPO_FST = false;
             this.SIGNAL_SYNC_REPO_SEC = false;
             Connection conn = DBConnector.connectPostgres();
@@ -48,6 +52,7 @@ public class Synchro {
             syncContainer();
         } catch (Exception e) {
             System.err.println(e.getMessage());
+            e.printStackTrace();
             System.err.println("LOG(ERROR): Faile to start sync, system exits.");
             System.exit(1);
         }
