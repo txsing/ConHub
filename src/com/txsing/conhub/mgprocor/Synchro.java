@@ -68,22 +68,21 @@ public class Synchro {
         List<String> imageDKLst = ImageDAO.getImageLstFromDocker();
 
         List<String> insertLst = new ArrayList<>();
-
         for (String imageId : imageDKLst) {
             if (!imageDBLst.contains(imageId)
-                    && !(insertLst.contains(imageId))) {
+                    //imageDKLst may containes duplicated ids, 
+                    //that is why we need insertList here
+                    && !(insertLst.contains(imageId))) {    
                 ImageDAO.syncNewImageIntoDB(imageId, conn);
                 insertLst.add(imageId);
             }
         }
-
+        
         for (String imgId : imageDBLst) {
             if (!imageDKLst.contains(imgId)) {
                 ImageDAO.deleteImageFromDB(imgId, conn);
-                imageDBLst.remove(imgId);
             }
         }
-
         conn.close();
     }
 
@@ -101,6 +100,7 @@ public class Synchro {
         }
         if (eventKind.equals("ENTRY_DELETE")) {
             ImageDAO.deleteImageFromDB(imageID, conn);
+            System.out.println("LOG(INFO): DEL IMG: " + imageID.substring(0, 12));
         }
         conn.close();
     }
@@ -113,6 +113,9 @@ public class Synchro {
         List<String> conDBLst = ContainerDAO.getContainerLstFromDB(conn);
         List<String> conDKLst = ContainerDAO.getContainerLstFromDocker();
         
+//        List<String> addList = new ArrayList<>();
+//        List<String> deleteLst = new ArrayList<>();
+        
         for (String conId : conDKLst) {
             if (!conDBLst.contains(conId)) {
                 ContainerDAO.insertNewContainerIntoDB(conId, conn);
@@ -122,9 +125,8 @@ public class Synchro {
         for (String conId : conDBLst) {
             if (!conDKLst.contains(conId)) {
                 ContainerDAO.deleteContainerFromDB(conId, conn);
-                conDBLst.remove(conId);
             }
-        }
+        }       
         conn.close();
     }
 

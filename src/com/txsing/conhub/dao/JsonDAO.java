@@ -22,14 +22,15 @@ public class JsonDAO {
         JSONObject jsonObject;
         String[] cmdParaArray = {"/bin/bash", "-c", "echo scse | sudo -S "
             + "cat /var/lib/docker/image/aufs/repositories.json"};
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CmdExecutor.executeNonInteractiveShellCMD(cmdParaArray, baos);
-        String imageInfoJsonString = baos.toString();
-        //remove the firstCotd pair of bracket, [ {xxxxx} ]
-        imageInfoJsonString = imageInfoJsonString.substring(
-                imageInfoJsonString.indexOf("{"));
-        //System.err.println(imageInfoJsonString);
-        baos.close();
+        String imageInfoJsonString;
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            CmdExecutor.executeNonInteractiveShellCMD(cmdParaArray, baos);
+            imageInfoJsonString = baos.toString();
+
+            //remove the firstCotd pair of bracket, [ {xxxxx} ]
+            imageInfoJsonString = imageInfoJsonString.substring(
+                    imageInfoJsonString.indexOf("{"));
+        }
         jsonObject = (JSONObject) new JSONParser().parse(imageInfoJsonString);
         jsonObject = (JSONObject) jsonObject.get("Repositories");
         return jsonObject;
@@ -40,22 +41,24 @@ public class JsonDAO {
      *
      * @param ID
      * @return
+     * @throws java.io.IOException
+     * @throws org.json.simple.parser.ParseException
      */
     public static JSONObject getImageAndConJSONInfo(String ID) throws IOException, ParseException {
         JSONObject jsonObject;
         String[] cmdParaArray = {"docker", "inspect", ID};
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CmdExecutor.executeNonInteractiveShellCMD(cmdParaArray, baos);
-        String imageInfoJsonString = baos.toString();
-        
-        imageInfoJsonString = imageInfoJsonString.substring(1,
-                imageInfoJsonString.lastIndexOf(']'));
+        String imageInfoJsonString;
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            CmdExecutor.executeNonInteractiveShellCMD(cmdParaArray, baos);
+            imageInfoJsonString = baos.toString();
+            imageInfoJsonString = imageInfoJsonString.substring(1,
+                    imageInfoJsonString.lastIndexOf(']'));
+        }
 
-        baos.close();
-        
-        if(imageInfoJsonString == null || imageInfoJsonString.equals(""))
+        if (imageInfoJsonString == null || imageInfoJsonString.equals("")) {
             return getImageAndConJSONInfo(ID);
-        
+        }
+
         jsonObject = (JSONObject) new JSONParser().parse(imageInfoJsonString);
         return jsonObject;
     }

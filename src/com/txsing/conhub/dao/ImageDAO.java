@@ -31,9 +31,10 @@ public class ImageDAO {
         try {
             sql = "DELETE FROM LAYERS WHERE" + " layerid = '"
                     + imageID + "'";
-            Statement stmt = conn.createStatement();
-            stmt.executeUpdate(sql);
-            stmt.close();
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(sql);
+            }
+            System.out.println("LOG(INFO): DELETE IMG: " +imageID.substring(0,6));
             return true;
         } catch (SQLException e) {
             System.err.println("LOG(DEBUG): Possible problematic SQL(DelImg): \n    " + sql);
@@ -50,6 +51,9 @@ public class ImageDAO {
      * @param imageID
      * @param conn
      * @return
+     * @throws java.sql.SQLException
+     * @throws java.io.IOException
+     * @throws org.json.simple.parser.ParseException
      */
     public static boolean syncNewImageIntoDB(String imageID,
             Connection conn) 
@@ -78,10 +82,9 @@ public class ImageDAO {
                     + newImage.getDockerFileID() + "', "
                     + newImage.getSize() + ", " + "'"
                     + newImage.getAuthor() + "')";
-            Statement stmt = conn.createStatement();
-            stmt.executeUpdate(sql);
-            stmt.close();
-            System.out.println("LOG(INFO): INSERT IMAGE: " + imageID.substring(0, 12));
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(sql);
+            }
         } catch (SQLException e) {
             System.err.println("LOG(DEBUG): Possible problematic SQL(SynImg): \n    " + sql);
             throw e;
@@ -98,10 +101,10 @@ public class ImageDAO {
         if (index == -1) {  //new repo, new tag
             repoID = RepoTagDAO.insertNewRepoIntoDB(conn, newImage.getRepo(), regName);
             synchro.repoDBLstAdd(repoString, repoID);
-            System.out.print("LOG(INFO): INSERT REPO&TAG: ");
+            System.out.print("LOG(INFO): INSERT IMG-rt: ");
         } else {    //existing repo, new tag
             repoID = repoDBLst.get(1).get(index);
-            System.out.print("LOG(INFO): INSERT TAG: ");
+            System.out.print("LOG(INFO): INSERT IMG-t: ");
         }
 
         /* ###### Insert Corresponding TAG ###### */
@@ -115,13 +118,12 @@ public class ImageDAO {
         List<String> imageDBLst = new ArrayList<>();
         
         String sql = "SELECT imageid FROM images";
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-
-        while (rs.next()) {
-            imageDBLst.add(rs.getString(1));
+        try (Statement stmt = conn.createStatement()) {
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                imageDBLst.add(rs.getString(1));
+            }
         }
-        stmt.close();
 
         return imageDBLst;
     }
@@ -131,10 +133,11 @@ public class ImageDAO {
         List<String> imageDKLstAftProcessing = new ArrayList<>();
         String[] cmdParaArray = {"docker", "images", "-q", "--no-trunc"};
         
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CmdExecutor.executeNonInteractiveShellCMD(cmdParaArray, baos);
-        String imageidLst = baos.toString();
-        baos.close();
+        String imageidLst;
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            CmdExecutor.executeNonInteractiveShellCMD(cmdParaArray, baos);
+            imageidLst = baos.toString();
+        }
         
         if (!imageidLst.equals("")) {
             imageDKLst = Arrays.asList(imageidLst.split("\n"));

@@ -116,7 +116,7 @@ public class DockerFileWatcher extends Thread {
                 //event detected
                 //System.out.format("%s: %s\n", event.kind().name(), child);
                 if (type.equals("image") && !child.toString().contains("tmp")) {
-                    System.out.println("LOG(INFO): IMAGE SYNC TRIGGERED");
+                    //System.out.println("LOG(INFO): IMAGE SYNC TRIGGERED");
                     /* docker pull a new image of which the image id is new, then
                     signal is set to false, cos the repo of that image will be
                     synced along with the image itself.

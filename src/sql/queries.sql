@@ -59,6 +59,7 @@ Insert into images values('5');
 select R.reponame, T.tag from Images I, Tags T, Repositories R where I.imageid = T.imageid and T.repoid = R.repoid;
 
 TAG('buggy',select I.imageid from Images I where I.imageid in CHILD(INTERSECTION('6689e','3b5d')))
+select R.reponame, T.tag from Images I, Tags T, Repositories R, Labels L where I.imageid = T.imageid and T.repoid = R.repoid and L.id = I.imageid and L.label = 'buggy';
 
 select R.reponame, T.tag from Images I, Tags T, Repositories R where I.imageid in CHILD(INTERSECTION('6689e','3b5d')) and I.imageid = T.imageid and T.repoid = R.repoid
 

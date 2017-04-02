@@ -53,12 +53,13 @@ public class RepoTagDAO {
         String sql = "SELECT tag FROM tags WHERE repoid = '" + repoid + "'";
         try {
             List<String> resultLst = new ArrayList<>();
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                resultLst.add(rs.getString(1));
+            ResultSet rs;
+            try (Statement stmt = conn.createStatement()) {
+                rs = stmt.executeQuery(sql);
+                while (rs.next()) {
+                    resultLst.add(rs.getString(1));
+                }
             }
-            stmt.close();
             rs.close();
             return resultLst;
         } catch (SQLException e) {
@@ -69,30 +70,32 @@ public class RepoTagDAO {
     }
 
     public static List<List<String>> getRepoListFromDB(String registryName,
-             Connection conn) throws SQLException {
-        String getRepoSQL = getRepoSQL = "SELECT repoid, reponame, regname"
-                + " FROM repositories WHERE"
+            Connection conn) throws SQLException {
+        String getRepoSQL;
+        getRepoSQL
+                = "SELECT repoid, reponame, regname".concat(" FROM repositories WHERE")
                 + " regname = '" + registryName + "'";
         try {
-            Statement stmt = conn.createStatement();
-            ResultSet repoRs = stmt.executeQuery(getRepoSQL);
-            List<String> repoLst = new ArrayList<>();
-            List<String> repoIDLst = new ArrayList<>();
-            while (repoRs.next()) {
-                //regname:reponame
-                repoLst.add(repoRs.getString(3) + ":" + repoRs.getString(2));
-                //repoid
-                repoIDLst.add(repoRs.getString(1));
+            ResultSet repoRs;
+            List<List<String>> result;
+            try (Statement stmt = conn.createStatement()) {
+                repoRs = stmt.executeQuery(getRepoSQL);
+                List<String> repoLst = new ArrayList<>();
+                List<String> repoIDLst = new ArrayList<>();
+                while (repoRs.next()) {
+                    //regname:reponame
+                    repoLst.add(repoRs.getString(3) + ":" + repoRs.getString(2));
+                    //repoid
+                    repoIDLst.add(repoRs.getString(1));
+                }
+                result = new ArrayList<>();
+                result.add(repoLst);
+                result.add(repoIDLst);
             }
-            List<List<String>> result = new ArrayList<>();
-            result.add(repoLst);
-            result.add(repoIDLst);
-            stmt.close();
             repoRs.close();
             return result;
         } catch (SQLException e) {
             System.err.println("LOG(DEBUG): Possible problematic SQL(gRPfDB): \n    " + getRepoSQL);
-            //System.err.println(e.getMessage());
             throw e;
         }
     }
@@ -104,10 +107,10 @@ public class RepoTagDAO {
      * @param repoName
      * @param regName
      * @return the id of the inserted repo.
-     * @throws java.lang.Exception
+     * @throws java.sql.SQLException
      */
     public static String insertNewRepoIntoDB(Connection conn, String repoName,
-             String regName) throws SQLException {
+            String regName) throws SQLException {
         String sql = null;
         try {
             SimpleDateFormat formater = new SimpleDateFormat("YYMMddHHmmssS");
@@ -115,9 +118,9 @@ public class RepoTagDAO {
             repoID = "RP" + repoID;
             sql = "INSERT INTO repositories VALUES('" + repoID + "', '"
                     + repoName + "', '" + regName + "')";
-            Statement stmt = conn.createStatement();
-            stmt.executeUpdate(sql);
-            stmt.close();
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(sql);
+            }
             return repoID;
         } catch (SQLException e) {
             System.err.println("LOG(DEBUG): Possible problematic SQL(InsRP): \n    " + sql);
@@ -127,14 +130,14 @@ public class RepoTagDAO {
     }
 
     public static void deleteRepoFromDB(Connection conn, String repoName,
-             String regName) throws SQLException {
+            String regName) throws SQLException {
         String sql = null;
         try {
             sql = "DELETE FROM repositories WHERE regName = '" + regName + "' AND "
                     + "repoName = '" + repoName + "'";
-            Statement stmt = conn.createStatement();
-            stmt.executeUpdate(sql);
-            stmt.close();
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(sql);
+            }
         } catch (SQLException e) {
             System.err.println("LOG(DEBUG): Possible problematic SQL(delRP): \n    " + sql);
             throw e;
@@ -142,13 +145,13 @@ public class RepoTagDAO {
     }
 
     public static boolean insertNewTagIntoDB(Connection conn, String tag,
-             String imageID, String repoID) throws SQLException {
+            String imageID, String repoID) throws SQLException {
         String sql = "INSERT INTO tags VALUES('" + tag + "', '" + imageID
                 + "', '" + repoID + "')";
         try {
-            Statement stmt = conn.createStatement();
-            stmt.executeUpdate(sql);
-            stmt.close();
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(sql);
+            }
             return true;
         } catch (SQLException e) {
             System.err.println("LOG(DEBUG): Possible problematic SQL(InsTag): \n    " + sql);
@@ -162,9 +165,9 @@ public class RepoTagDAO {
         try {
             sql = "DELETE FROM tags WHERE repoid = '" + repoID + "' AND "
                     + "tag = '" + tag + "'";
-            Statement stmt = conn.createStatement();
-            stmt.executeUpdate(sql);
-            stmt.close();
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(sql);
+            }
         } catch (SQLException e) {
             System.err.println("LOG(DEBUG): Possible problematic SQL(delTag): \n    " + sql);
             throw e;
@@ -182,9 +185,8 @@ public class RepoTagDAO {
             while (repoRs.next()) {
                 repoID = repoRs.getString(1);
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             System.err.println("LOG(DEBUG): Possible problematic SQL(gRPID): \n    " + sql);
-            //System.err.println(e.getMessage());
             throw e;
         }
         return repoID;

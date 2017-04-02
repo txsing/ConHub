@@ -1,5 +1,5 @@
 # ConHub
-##A Management System for Docker Container Metadata
+## A Management System for Docker Container Metadata
 ConHub is a management platform designed for Docker containers to manage their metadata, it arms the original
 Docker client with strong/flexible querying ability.
 
